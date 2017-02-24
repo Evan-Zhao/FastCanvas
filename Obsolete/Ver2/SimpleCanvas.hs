@@ -2,22 +2,17 @@
 
 module Main (main) where
 
-import           Control.Monad     (mapM_, unless, void, (>=>))
-import qualified Course.Course     as C
+import           Control.Monad      (mapM_, unless, void, (>=>))
+import qualified Course.Course      as C
 import           Course.CourseFile
-import           Settings.Imports
+import           Settings.Exception
+import           Settings.Settings
 import           System.Directory
-import           System.FilePath   (isRelative, (</>))
-import           Text.Read         (readEither)
+import           System.FilePath    (isRelative, (</>))
+import           Text.Read          (readEither)
 
 main :: IO ()
-main = do
-    envR <- takeRight <$> getEnvR
-    envS <- takeRight <$> getEnvS
-    (result, envNewS, logged) <- runRWST (runExceptT mainE) envR envS
-    either printException return result
-      where
-        takeRight (Right x) = x
+main = runExceptT mainE >>= either printException return
 
 printException :: SomeException -> IO ()
 printException ex = do
@@ -27,12 +22,12 @@ printException ex = do
 
 mainE :: Global ()
 mainE = do
-    liftIO $ putStrLn "Fetching course list..."
+    lift $ putStrLn "Fetching course list..."
     this <- C.thisTermCourse
-    liftIO $ putStrLn $ concatMap printCourse this
-    --courseId <- liftIO $ promptAndCheckId $ map C.id this
-    liftIO $ putStrLn "Will download file of each course to corresponding subfolder."
-    downloadDir <- liftIO promptAndCheckPath
+    lift $ putStrLn $ concatMap printCourse this
+    --courseId <- lift $ promptAndCheckId $ map C.id this
+    lift $ putStrLn "Will download file of each course to corresponding subfolder."
+    downloadDir <- lift promptAndCheckPath
     mapM_ (downloadFromCourse downloadDir) this
 
 printCourse :: C.Course -> String

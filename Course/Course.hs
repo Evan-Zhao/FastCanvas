@@ -5,8 +5,8 @@ module Course.Course where
 
 import           Data.Aeson
 import           GHC.Generics
-import           Settings.Settings
-import           Text.Parsec       hiding (token)
+import           Settings.Imports
+import           Text.Parsec
 
 type CourseID = Int
 data Course = Course {
@@ -24,7 +24,7 @@ takeThisTermCourse = filter ((== thisTermId) . enrollment_term_id)
   where
     thisTermId = 86490000000000005
 
-thisTermCourse :: MainExcept [Course]
+thisTermCourse :: Global [Course]
 thisTermCourse = do
     respJSON <- simpleHttpJSON "courses"
     return $ takeThisTermCourse respJSON
@@ -33,6 +33,6 @@ courseShortName :: Course -> String
 courseShortName c = either (const "") Prelude.id $ parse shortNameP "" $ name c
 
 shortNameP = do
-    a <- sequence [char 'V', oneOf ['A'..'Z']]
+    a <- sequence [oneOf "VTP", oneOf ['A'..'Z']]
     b <- count 3 digit
     return $ a ++ b

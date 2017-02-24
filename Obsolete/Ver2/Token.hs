@@ -11,7 +11,7 @@ tokenFilePath :: FilePath
 tokenFilePath = "Assets/TokenRaw/Token.txt"
 
 tokenE :: Global Bs.ByteString
-tokenE = catchIOE $ Bs.readFile tokenFilePath
+tokenE = catchE' $ Bs.readFile tokenFilePath
 
 addTokenTo :: Bs.ByteString -> Request -> Request
 addTokenTo tokenBS = addRequestHeader hAuthorization (Bs.toStrict $ "Bearer " `Bs.append` tokenBS)

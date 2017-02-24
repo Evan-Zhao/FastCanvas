@@ -1,12 +1,14 @@
-module Downloader1 where
+module Files.Downloader where
 
+import           Control.Monad              (foldM)
 import qualified Data.ByteString.Lazy.Char8 as Bs
-import           Data.Foldable
-import           Settings
+import           Network.HTTP.Simple
+import           Settings.Settings
 import           System.Directory
+import           System.FilePath            ((</>))
 
 type File = Bs.ByteString
-type FileE = MainExcept File
+type FileE = Global File
 
 data DownloadState = DownloadState {
     existN        :: Int,
@@ -34,40 +36,32 @@ isAllFail :: DownloadState -> Bool
 isAllFail (DownloadState 0 0 f _) = f /= 0
 isAllFail _                       = False
 
-data WriteableNode = FolderNode {
-                        wnFullPath  :: String,
-                        wnFileUrl   :: ByteString,
-                        wnFolderUrl :: ByteString
-                     } |
-                     FileNode   {
-                        wnFullPath :: String,
-                        wnUrl      :: String
-                     }
+data WriteableNode = FolderNode { wnName :: String } |
+                     FileNode   { wnName :: String, wnUrl :: String }
 
-download :: String -> MainExcept Bs.ByteString
-download url = catchMainE $ getResponseBody <$> httpLBS (parseRequest_ url)
+writeNode :: FilePath -> WriteableNode -> Global ()
+writeNode fp (FolderNode name)   = lift $ createDirectoryIfMissing False $ fp </> name
+writeNode fp (FileNode name url) = downloadTo url (fp </> name)
 
-downloadTo :: String -> String -> MainExcept ()
+download :: String -> Global Bs.ByteString
+download url = catchE' $ getResponseBody <$> httpLBS (parseRequest_ url)
+
+downloadTo :: String -> String -> Global ()
 downloadTo url path = do
     file <- download url
-    catchMainE $ Bs.writeFile path file
+    catchE' $ Bs.writeFile path file
 
-writeNode :: WriteableNode -> MainExcept ()
-writeNode (FolderNode name _ _) = lift $ createDirectoryIfMissing False name
-writeNode (FileNode name url)   = downloadTo url name
+downloadBatchTo :: [String] -> [String] -> IO DownloadState
+downloadBatchTo urls paths = foldM writeAndCount emptyState $ zip urls paths
 
-downloadTree :: (Foldable t) => t WriteableNode -> IO DownloadState
-downloadTree = foldlM writeAndCount emptyState
-
-writeAndCount :: DownloadState -> WriteableNode -> IO DownloadState
-writeAndCount st node = do
-    exist <- doesPathExist path
+writeAndCount :: DownloadState -> (String, String) -> IO DownloadState
+writeAndCount st (url, name) = do
+    exist <- doesFileExist name
     if exist then return $ addEx st else do
-        putStrLn $ "Writing on path " ++ path ++ "..."
-        result <- runExceptT $ writeNode node
+        putStrLn $ "Writing file " ++ name ++ "..."
+        result <- runExceptT $ downloadTo url name
         return $ either (addFaWith st) (const $ addSu st) result
   where
-    path = wnName node
     addEx (DownloadState ex succ' fail' s) = DownloadState (ex+1) succ' fail' s
     addSu (DownloadState ex succ' fail' s) = DownloadState ex (succ'+1) fail' s
     addFaWith (DownloadState ex succ' fail' "") str = DownloadState ex succ' (fail'+1) str
