@@ -7,7 +7,7 @@ module Settings.Network (
 
 import           Data.Aeson
 import           Data.Aeson.Types           ()
-import           Data.ByteString.Lazy.Char8
+import qualified Data.ByteString.Lazy.Char8 as L
 import           Network.HTTP.Simple
 import           Settings.Global
 import           Settings.Token.Token
@@ -23,7 +23,7 @@ simpleHttpJSON str = do
     req <- canvasParseRequest str
     catchIOE $ getResponseBody <$> httpJSON req
 
-simpleHttpLBS :: String -> Global ByteString
+simpleHttpLBS :: String -> Global L.ByteString
 simpleHttpLBS str = do
     req <- canvasParseRequest str
     catchIOE $ getResponseBody <$> httpLBS req
@@ -34,7 +34,7 @@ simpleHttpJSON' str = do
     req' <- addToken req
     catchIOE $ getResponseBody <$> httpJSON req'
 
-simpleHttpLBS' :: String -> Global ByteString
+simpleHttpLBS' :: String -> Global L.ByteString
 simpleHttpLBS' str = do
     req <- liftIO $ parseRequest str
     req' <- addToken req

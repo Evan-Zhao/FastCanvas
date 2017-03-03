@@ -1,11 +1,11 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Course.Course where
+module Course.List where
 
 import           Data.Aeson
 import           GHC.Generics
-import           Settings.Imports
+import           Settings
 import           Text.Parsec
 
 type CourseID = Int

@@ -1,16 +1,17 @@
 module Files.Node.FSNode where
 
-import qualified Data.ByteString.Lazy.Char8 as Bs
-import           Settings.Imports
+import qualified Data.ByteString.Lazy.Char8 as L
+import           Files.Node.Download
+import           Settings
 import           System.Directory
 import           System.FilePath            ((</>))
 
-type File = Bs.ByteString
+type File = L.ByteString
 
-downloadTo :: String -> String -> Global ()
-downloadTo url path = do
-    file <- simpleHttpLBS' url
-    catchIOE $ Bs.writeFile path file
+-- downloadTo :: String -> String -> Global ()
+-- downloadTo url path = do
+--     file <- downloadFile url
+--     catchIOE $ L.writeFile path file
 
 data FSNode = FolderNode {
                 relativePath  :: String

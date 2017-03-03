@@ -2,19 +2,20 @@
 
 module Main (main) where
 
-import           Control.Monad     (mapM_, unless, void, (>=>))
-import qualified Course.Course     as C
-import           Course.CourseFile
-import           Settings.Imports
+import           Control.Monad    (mapM_, unless, void)
 import           System.Directory
-import           System.FilePath   (isRelative, (</>))
-import           Text.Read         (readEither)
+import           System.FilePath  (isRelative, (</>))
+import           Text.Read        (readEither)
+
+import           Course.File
+import qualified Course.List      as C
+import           Settings
 
 main :: IO ()
 main = do
     envR <- takeRight <$> getEnvR
     envS <- takeRight <$> getEnvS
-    (result, envNewS, logged) <- runRWST (runExceptT mainE) envR envS
+    (result, envNewS, logged) <- runRWST (runExceptT mainG) envR envS
     either printException return result
       where
         takeRight (Right x) = x
@@ -22,41 +23,24 @@ main = do
 printException :: SomeException -> IO ()
 printException ex = do
     putStrLn $ toString ex
-    putStrLn "Press anykey to quit."
+    putStrLn "Press enter to quit."
     void getChar
 
-mainE :: Global ()
-mainE = do
-    liftIO $ putStrLn "Fetching course list..."
+mainG :: Global ()
+mainG = do
+    liftIO $ putStrLn "Fetching course list...\n"
     this <- C.thisTermCourse
-    liftIO $ putStrLn $ concatMap printCourse this
+    --liftIO $ putStrLn $ concatMap printCourse this
     --courseId <- liftIO $ promptAndCheckId $ map C.id this
-    liftIO $ putStrLn "Will download file of each course to corresponding subfolder."
-    downloadDir <- liftIO promptAndCheckPath
-    mapM_ (downloadFromCourse downloadDir) this
+    --liftIO $ putStrLn "Will download file of each course to corresponding subfolder."
+    defPath <- getDefaultPath <$> lift ask
+    liftIO $ checkDefaultPath defPath
+    liftIO $ putStrLn $ "Will download to " ++ defPath ++ "\n"
+    mapM_ (downloadFromCourse defPath) this
 
-printCourse :: C.Course -> String
-printCourse course = show (C.name course) ++ "\t\t\t\t" ++ show (C.id course) ++ "\n"
-
-promptAndCheckId :: [C.CourseID] -> IO C.CourseID
-promptAndCheckId lst = do
-    putStrLn "Which course to sync the files (ID):"
-    eitherIdInputed <- readEither <$> getLine
-    let idValid = either (const Nothing) (\i -> if i `elem` lst then Just i else Nothing)
-                  eitherIdInputed
-    maybe (putStrLn "Invalid id." >> promptAndCheckId lst) return idValid
-
-promptAndCheckPath :: IO FilePath
-promptAndCheckPath = do
-    path <- getCurrentDirectory
-    putStrLn $ "Presently at path " ++ path
-    putStrLn "Download to where (relative/absolute):"
-    pathInputed <- getLine
-    let absolute = if isRelative pathInputed then path </> pathInputed
-                                             else pathInputed
-    exist <- doesDirectoryExist absolute
-    unless exist $ do
-        putStrLn "Path does not exist; creating..."
-        createDirectory absolute
-    putStrLn $ "Will download to " ++ absolute
-    return absolute
+checkDefaultPath :: FilePath -> IO ()
+checkDefaultPath path = do
+    isExist <- doesDirectoryExist path
+    unless isExist $ do
+        liftIO $ putStrLn $ "Warning: default path " ++ path ++ " does not exist; creating..."
+        createDirectoryIfMissing True path

@@ -5,7 +5,7 @@ module Files.Node.NodeJSON where
 import           Data.Aeson
 import           Files.Node.FSNode
 import           GHC.Generics
-import           Settings.Imports
+import           Settings
 import           System.FilePath   (makeValid)
 
 type FileID = Int

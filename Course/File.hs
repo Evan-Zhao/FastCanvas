@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Course.CourseFile where
+module Course.File where
 
 import           Control.Monad       (unless, when)
-import qualified Course.Course       as C
+import qualified Course.List         as C
 import           Data.List           (find)
 import           Files.Node.NodeJSON
 import           Files.State
 import           Files.Structure
-import           Settings.Imports
+import           Settings
 
 getRootFromCourse :: C.CourseID -> Global (Maybe FolderJSON)
 getRootFromCourse id' = do
@@ -17,7 +17,7 @@ getRootFromCourse id' = do
 
 downloadFromCourse :: FilePath -> C.Course -> Global ()
 downloadFromCourse folder course = do
-    liftIO $ putStrLn $ "Now downloading for course " ++ courseName
+    liftIO $ putStrLn $ "\nNow downloading for course " ++ courseName
     liftIO $ putStrLn "Counting files..."
     state <- getRootFromCourse id' >>= maybe emptyCourseResponse nonemptyCourse
     liftIO $ print state

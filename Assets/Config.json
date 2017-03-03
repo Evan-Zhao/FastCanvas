@@ -1,4 +1,5 @@
 {
     "host" : "https://canvas.instructure.com/api/v1/", 
-    "token" : "8649~GFqYP6MVpVK4OIlzHGuvalICMuBwI4wPW9qot4Ky98pk48uE98P1GtmYJNXx6svN"
+    "token" : "8649~GFqYP6MVpVK4OIlzHGuvalICMuBwI4wPW9qot4Ky98pk48uE98P1GtmYJNXx6svN",
+    "download_path" : "D:\\SJTU\\Sophomore S2"
 }

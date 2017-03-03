@@ -11,7 +11,7 @@ import           Data.Tree
 import           Files.Node.FSNode
 import           Files.Node.NodeJSON
 import           Files.State
-import           Settings.Imports
+import           Settings
 import           System.FilePath     ((</>))
 
 downloadTreeUncounted :: FilePath -> Tree FSNode -> GlobalNoE (Tree DownloadState)
