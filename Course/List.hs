@@ -1,12 +1,15 @@
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
 
 module Course.List where
 
 import           Data.Aeson
 import           GHC.Generics
-import           Settings
 import           Text.Parsec
+
+import           Settings.Network
 
 type CourseID = Int
 data Course = Course {
@@ -24,7 +27,7 @@ takeThisTermCourse = filter ((== thisTermId) . enrollment_term_id)
   where
     thisTermId = 86490000000000005
 
-thisTermCourse :: Global [Course]
+thisTermCourse :: MonadRIOE e m => m [Course]
 thisTermCourse = do
     respJSON <- simpleHttpJSON "courses"
     return $ takeThisTermCourse respJSON

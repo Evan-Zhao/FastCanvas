@@ -2,14 +2,17 @@
 
 module Main (main) where
 
-import           Control.Monad    (mapM_, unless, void)
+import           Control.Exception
+import           Control.Monad              (mapM_, unless, void)
+import           Control.Monad.RWS.Strict
+import           Control.Monad.Trans.Except (runExceptT)
 import           System.Directory
-import           System.FilePath  (isRelative, (</>))
-import           Text.Read        (readEither)
+import           System.FilePath            (isRelative, (</>))
+import           Text.Read                  (readEither)
 
 import           Course.File
-import qualified Course.List      as CL
-import           Settings
+import qualified Course.List                as CL
+import           Settings.Monad.Global
 
 main :: IO ()
 main = do
@@ -18,9 +21,9 @@ main = do
     (result, envNewS, logged) <- runRWST (runExceptT mainG) envR envS
     either printException return result
 
-printException :: SomeException -> IO ()
+printException :: (Exception e) => e -> IO ()
 printException ex = do
-    putStrLn $ toString ex
+    print ex
     putStrLn "Press enter to quit."
     void getChar
 

@@ -1,7 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
 
 module Files.Node.Download (
-    downloadTo
+    downloadTo,
+    MonadDownload
 ) where
 
 import           Control.Monad.Trans.Resource
@@ -15,11 +18,13 @@ import qualified Data.Conduit.Binary          as CB
 import           Data.Maybe                   (fromJust)
 import           Network.HTTP.Conduit
 import           Network.HTTP.Types.Header
-import           Settings
+import           Settings.Monad.Exception
 import           System.Console.AsciiProgress
 import           Text.Printf                  (printf)
 
-downloadTo :: String -> String -> Global ()
+type MonadDownload e m = (MonadIOE e m, MonadThrow m)
+
+downloadTo :: MonadDownload e m => String -> String -> m ()
 downloadTo url path = do
     request <- parseRequest url
     catchIOE $ withManager $ \mgr -> displayConsoleRegions $ do

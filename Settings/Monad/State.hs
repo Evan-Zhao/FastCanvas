@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Settings.Environment.State where
+module Settings.Monad.State where
 
 import           Control.Exception          (SomeException, try)
 import           Control.Monad              (unless)

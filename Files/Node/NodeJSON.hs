@@ -3,10 +3,10 @@
 module Files.Node.NodeJSON where
 
 import           Data.Aeson
-import           Files.Node.FSNode
 import           GHC.Generics
-import           Settings
 import           System.FilePath   (makeValid)
+
+import           Files.Node.FSNode
 
 type FileID = Int
 type FolderID = Int

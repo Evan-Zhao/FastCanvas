@@ -1,8 +1,14 @@
+{-# LANGUAGE ConstraintKinds   #-}
 {-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Settings.Environment.Reader where
+module Settings.Monad.Reader (
+    module Settings.Monad.Reader,
+    module Control.Monad.Reader
+) where
 
+import           Control.Monad.Reader
 import           Data.Aeson
 import           Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -26,3 +32,5 @@ defaultEnvR :: EnvR
 defaultEnvR = EnvR {
     getHost        = "https://canvas.instructure.com/api/v1/"
 }
+
+type MonadEnvReader m = MonadReader EnvR m
