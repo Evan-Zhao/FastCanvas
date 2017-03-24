@@ -35,7 +35,9 @@ data FolderJSON = FolderJSON {
     name             :: String,
     parent_folder_id :: Maybe FolderID,
     files_url        :: String,
-    folders_url      :: String
+    folders_url      :: String,
+    files_count      :: Int,
+    folders_count    :: Int
 } deriving (Eq, Show, Generic)
 instance ToJSON FolderJSON
 instance FromJSON FolderJSON
