@@ -41,7 +41,7 @@ traverseTreeMonoid = traverseTreeMonoid' mempty where
         childrensNew <- mapM (traverseTreeMonoid' (acc `mappend` n) f) ch
         return $ Node nodeNew childrensNew
 
-traverseTreeFold :: (Monad m, Monoid a)
+traverseTreeFold :: Monad m
                  => (a -> a -> a) -> (a -> a -> m b)
                  -> a -> Tree a -> m (Tree b)
 traverseTreeFold accF mapF acc (Node n ch) = do

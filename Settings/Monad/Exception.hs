@@ -5,7 +5,8 @@
 module Settings.Monad.Exception (
     module Settings.Monad.Exception,
     SomeException,
-    liftIO
+    liftIO,
+    MonadError
 ) where
 
 import           Control.Exception

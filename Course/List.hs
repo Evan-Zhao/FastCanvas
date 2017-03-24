@@ -27,9 +27,9 @@ takeThisTermCourse = filter ((== thisTermId) . enrollment_term_id)
   where
     thisTermId = 86490000000000005
 
-thisTermCourse :: MonadRIOE e m => m [Course]
+thisTermCourse :: MonadRIOE' m => m [Course]
 thisTermCourse = do
-    respJSON <- simpleHttpJSON "courses"
+    respJSON <- canvasJSON "courses"
     return $ takeThisTermCourse respJSON
 
 courseShortName :: Course -> String

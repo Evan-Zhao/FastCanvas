@@ -14,6 +14,17 @@ import           Course.File
 import qualified Course.List                as CL
 import           Settings.Monad.Global
 
+import qualified Data.ByteString.Lazy       as L
+
+mainAdaptor :: Global a -> IO a
+mainAdaptor g = do
+    envR <- getEnvR
+    envS <- getEnvS
+    (result, envNewS, logged) <- runRWST (runExceptT g) envR envS
+    return $ takeout result
+  where
+    takeout (Right a) = a
+
 main :: IO ()
 main = do
     envR <- getEnvR

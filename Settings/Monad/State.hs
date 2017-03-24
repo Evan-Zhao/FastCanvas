@@ -13,6 +13,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import           GHC.Generics
 import           System.Directory           (createDirectoryIfMissing,
                                              doesDirectoryExist)
+
 data EnvS = EnvS {
     getUserToken   :: String,
     getDefaultPath :: String

@@ -1,6 +1,12 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
+
 module Files.State where
 
 import           Control.Exception
+import           Data.Aeson
+import           Data.Monoid       ((<>))
+import           GHC.Generics
 
 data DownloadState = DownloadState {
     existN        :: Int,
@@ -8,6 +14,23 @@ data DownloadState = DownloadState {
     failedN       :: Int,
     failureSample :: [SomeException]
 }
+
+instance ToJSON SomeException where
+    toJSON e = toJSON $ show e
+    toEncoding e = toEncoding $ show e
+
+instance ToJSON DownloadState where
+    toJSON DownloadState {..} =
+        object ["exist" .= existN, "succeed" .= succeedN
+              , "failed" .= failedN
+              , "exception" .= failureSample
+            ]
+
+    toEncoding DownloadState {..} =
+        pairs ("exist" .= existN <> "succeed" .= succeedN
+            <> "failed" .= failedN
+            <> "exception" .= failureSample
+            )
 
 instance Show DownloadState where
     show (DownloadState 0 0 0 _) = "No files to download."
