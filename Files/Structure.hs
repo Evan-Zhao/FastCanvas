@@ -49,9 +49,11 @@ writeAndCount parent node = do
     exist <- doesExist parent node
     if exist then return singleExState else do
         liftIO $ putStrLn $ "Writing on path " ++ path ++ "..."
-        result <- liftIO $ runExceptT (writeNode parent node :: ExceptT SomeException IO ())
+        result <- liftIO $ runExceptT downloadExceptT
         return $ either singleFaStateWith (const singleSuState) result
   where
+    downloadExceptT :: ExceptT SomeException IO ()
+    downloadExceptT = writeNode parent node
     path = parent </> relativePath node
 
 genTreeSeeds :: MonadRIOE' m => TreeSeed -> m (FSNode, [TreeSeed])
