@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Files.Structure (
@@ -30,14 +31,6 @@ renameRoot newName (Node root xs) = Node (root { relativePath = newName }) xs
 
 downloadTree :: MonadIO m => FilePath -> Tree FSNode -> m DownloadState
 downloadTree parent rootNode = fold <$> downloadTreeUncounted parent rootNode
-
--- downloadTreeUncounted :: MonadIO m => FilePath -> Tree FSNode -> m (Tree DownloadState)
--- downloadTreeUncounted parent (Node root chs) = do
---     rootState <- writeAndCount parent root
---     childStates <- mapM (downloadTreeUncounted newPath) chs
---     return $ Node rootState childStates
---       where
---         newPath = parent </> relativePath root
 
 downloadTreeUncounted :: MonadIO m => FilePath -> Tree FSNode -> m (Tree DownloadState)
 downloadTreeUncounted = traverseTreeFold combinator writeAndCount where
