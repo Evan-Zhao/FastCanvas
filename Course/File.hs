@@ -24,12 +24,11 @@ getRootFromCourse id' = do
 downloadFromCourse :: MonadRIOE' m => FilePath -> C.Course -> m ()
 downloadFromCourse folder course = do
     liftIO $ putStrLn $ "\nNow downloading for course " ++ courseName
-    maybeRootFolder <- getRootFromCourse id'
-    state <- maybe emptyCourseResponse nonemptyCourseResponse maybeRootFolder
+    liftIO $ putStrLn "Counting files..."
+    state <- getRootFromCourse id' >>= maybe emptyCourseResponse (nonemptyCourse courseName folder)
     liftIO $ print state
     when (isAllFail state) potentialError
   where
-    nonemptyCourseResponse = nonemptyCourse courseName folder
     courseName = C.courseShortName course
     id' = C.id course
 
@@ -43,14 +42,13 @@ emptyCourseResponse = escape "Empty file list; skipping."
 
 nonemptyCourse :: MonadRIOE' m => String -> FilePath -> FolderJSON -> m DownloadState
 nonemptyCourse courseName folder root = do
-    let [fileN, folderN] = [files_count root, folders_count root]
-    liftIO $ putStrLn $ "Files to download: " ++ show fileN
     fileTree <- unfoldFileTree (Right root)
-    if fileN == 0 && folderN == 0
-        then escape $ "Course " ++ courseName ++ " has empty file list."
-        else do
-            let fileTree' = renameRoot courseName fileTree
-            downloadTree folder fileTree'
+    if isSingleNode fileTree
+    then escape $ "Course " ++ courseName ++ " has empty file list."
+    else do
+        let fileTree' = renameRoot courseName fileTree
+        liftIO $ putStrLn $ "Files (folders) to download: " ++ show (length fileTree)
+        downloadTree folder fileTree'
 
 potentialError :: MonadIOE SomeException m => m ()
 potentialError = do
