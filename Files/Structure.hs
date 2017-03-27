@@ -9,6 +9,7 @@ module Files.Structure (
 ) where
 
 import           Control.Monad              (mapM)
+import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
 import           Data.Foldable
 import           Data.Tree
@@ -33,7 +34,9 @@ downloadTree :: MonadIO m => FilePath -> Tree FSNode -> m DownloadState
 downloadTree parent rootNode = fold <$> downloadTreeUncounted parent rootNode
 
 downloadTreeUncounted :: MonadIO m => FilePath -> Tree FSNode -> m (Tree DownloadState)
-downloadTreeUncounted = traverseTreeFold combinator writeAndCount where
+downloadTreeUncounted fp tree =
+    liftIO $ traverseTreeFoldPar combinator writeAndCount fp tree
+  where
     combinator l r = l </> relativePath r
 
 writeAndCount :: MonadIO m => FilePath -> FSNode -> m DownloadState

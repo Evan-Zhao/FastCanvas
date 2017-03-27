@@ -3,7 +3,7 @@
 module Files.Digest where
 
 import           Control.Monad            ((>=>))
-import           Control.Monad.IO.Class   (MonadIO)
+import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import           Crypto.Hash
 import           Data.Aeson
 import qualified Data.ByteString.Lazy     as Lazy
@@ -49,7 +49,7 @@ unfoldDirectoryTree = unfoldTreeM $ \path -> do
 
 zipFilePathWithSha1 :: MonadIO m => Tree FilePath -> m FSDigestTree
 zipFilePathWithSha1 = fmap FSDigestTree
-                    . traverseTreeFold (</>) mapF ""
+                    . liftIO . traverseTreeFoldPar (</>) mapF ""
   where
     mapF parent this = let full = parent </> this in (,) full <$> liftIO (getSha1 full)
 
