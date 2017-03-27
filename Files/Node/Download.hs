@@ -36,25 +36,36 @@ downloadTo url path = do
       noLengthInfo = liftIO $ printf "Length info not provided"
       haveLengthInfo resp len = do
         liftIO $ printf "content length : %d \n" len
-        bar <- liftIO $ newProgressBar def { pgTotal = len
-                                           , pgWidth = 100
-                                           , pgOnCompletion = Just "Download done"
-                                           , pgFormat = "Downloading :percent [:bar]\
-                                                \ :current/:total (:eta s remaining)"
-                                           }
-        responseBody resp $$+- countBytes bar 0 len =$ CB.sinkFile path
+        -- bar <- liftIO $ newProgressBar def { pgTotal = len
+        --                                    , pgWidth = 100
+        --                                    , pgOnCompletion = Just "Download done"
+        --                                    , pgFormat = "Downloading :percent [:bar]\
+        --                                         \ :current/:total (:eta s remaining)"
+        --                                    }
+        responseBody resp $$+- countBytes 0 len =$ CB.sinkFile path
 
 findContentLength :: ResponseHeaders -> Maybe Integer
 findContentLength headers = transform <$> lookup (CI.mk "Content-Length") headers where
     transform = fst . fromJust . LC.readInteger . L.fromStrict
 
-countBytes :: MonadResource m => ProgressBar -> Integer -> Integer -> Conduit B.ByteString m B.ByteString
-countBytes bar acc total = do
+-- countBytes :: MonadResource m => ProgressBar -> Integer -> Integer -> Conduit B.ByteString m B.ByteString
+-- countBytes bar acc total = do
+--     bs <- await
+--     case bs of
+--         Nothing -> return ()
+--         Just b  -> do
+--             let lenInt = B.length b
+--             yield b
+--             liftIO $ tickN bar lenInt
+--             countBytes bar (acc + fromIntegral lenInt) total
+
+countBytes :: MonadResource m => Integer -> Integer -> Conduit B.ByteString m B.ByteString
+countBytes acc total = do
     bs <- await
     case bs of
         Nothing -> return ()
         Just b  -> do
             let lenInt = B.length b
             yield b
-            liftIO $ tickN bar lenInt
-            countBytes bar (acc + fromIntegral lenInt) total
+            --liftIO $ tickN bar lenInt
+            countBytes (acc + fromIntegral lenInt) total
