@@ -2,6 +2,7 @@
 
 module Main (main) where
 
+import           Control.Concurrent
 import           Control.Exception
 import           Control.Monad              (mapM_, unless, void)
 import           Control.Monad.RWS.Strict
@@ -11,29 +12,29 @@ import           System.Directory
 import           System.FilePath            (isRelative, (</>))
 import           Text.Read                  (readEither)
 
-import           Course.File
 import qualified Course.List                as CL
+import           Frontend.Course.File
 import           Settings.Initialize
 import           Settings.Monad.Global
 
-mainAdaptor :: Global a -> IO a
-mainAdaptor g = do
+setup :: Global (EnvR, EnvS)
+setup = do
     envR <- getEnvR
     let path = getConfigPath envR
     maybeEnvS <- tryGetEnvS path
     envS <- maybe (queryEnvS path) return maybeEnvS
-    (result, envNewS, logged) <- runRWST (runExceptT g) envR envS
+    return (envR, envS)
+
+mainAdaptor :: Global a -> IO a
+mainAdaptor g = do
+    (result, envNewS, logged) <- uncurry (runRWST $ runExceptT g) <$> setup
     return $ takeout result
   where
     takeout (Right a) = a
 
 main :: IO ()
 main = do
-    envR <- getEnvR
-    let path = getConfigPath envR
-    maybeEnvS <- tryGetEnvS path
-    envS <- maybe (queryEnvS path) return maybeEnvS
-    (result, envNewS, logged) <- runRWST (runExceptT mainG) envR envS
+    (result, envNewS, logged) <- uncurry (runRWST $ runExceptT g) <$> setup
     either printException return result
 
 printException :: (Exception e) => e -> IO ()
@@ -47,13 +48,14 @@ mainG = do
     liftIO $ putStrLn "Fetching course list...\n"
     this <- CL.thisTermCourse
     defPath <- getDefaultPath <$> lift get
-    liftIO $ checkDefaultPath defPath
     liftIO $ putStrLn $ "Will download to " ++ defPath ++ "\n"
+    isExist <- liftIO $ checkDefaultPath defPath
+    unless isExist $ liftIO $ putStrLn $
+        "Warning: default path " ++ defPath ++ " does not exist; creating..."
     mapM_ (downloadFromCourse defPath) this
 
-checkDefaultPath :: FilePath -> IO ()
+checkDefaultPath :: FilePath -> IO Bool
 checkDefaultPath path = do
     isExist <- doesDirectoryExist path
-    unless isExist $ do
-        liftIO $ putStrLn $ "Warning: default path " ++ path ++ " does not exist; creating..."
-        createDirectoryIfMissing True path
+    unless isExist $ createDirectoryIfMissing True path
+    return isExist

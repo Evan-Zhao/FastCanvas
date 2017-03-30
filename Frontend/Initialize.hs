@@ -1,4 +1,4 @@
-module Settings.Initialize where
+module Frontend.Initialize where
 
 import           Control.Monad              (unless)
 import           Data.Aeson

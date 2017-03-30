@@ -21,6 +21,7 @@ import           Files.State
 import           Files.Tree
 import           Settings.Monad.Exception
 import           Settings.Network
+import           TentativePush
 
 type TreeSeed = Either FileJSON FolderJSON
 
@@ -43,7 +44,7 @@ writeAndCount :: MonadIO m => FilePath -> FSNode -> m DownloadState
 writeAndCount parent node = do
     exist <- doesExist parent node
     if exist then return singleExState else do
-        liftIO $ putStrLn $ "Writing on path " ++ path ++ "..."
+        liftIO $ pipePush $ "Writing on path " ++ path ++ "..."
         result <- liftIO $ runExceptT downloadExceptT
         return $ either singleFaStateWith (const singleSuState) result
   where
