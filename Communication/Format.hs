@@ -9,7 +9,7 @@ import           GHC.Generics
 import           Settings.Monad.Global
 
 newtype ApiResponse = ApiResponse {
-    unResponse :: Either SomeException [(CL.Course, DownloadState)]
+    unResponse :: Either SomeException [(CL.Course, DownloadSummary)]
 } deriving (Generic)
 
 instance ToJSON ApiResponse

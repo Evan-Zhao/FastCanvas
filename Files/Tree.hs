@@ -1,5 +1,4 @@
 module Files.Tree (
-    traverseTreeFold,
     traverseTreeFoldPar,
     isSingleNode
 ) where
@@ -8,14 +7,6 @@ import           Control.Concurrent.Async
 import           Control.Concurrent.MSem
 import           Data.Traversable         (Traversable)
 import           Data.Tree
-
-traverseTreeFold :: Monad m
-                 => (r -> a -> r) -> (r -> a -> m b)
-                 -> r -> Tree a -> m (Tree b)
-traverseTreeFold accF mapF acc (Node n ch) = do
-    nodeNew <- mapF acc n
-    childrensNew <- mapM (traverseTreeFold accF mapF $ acc `accF` n) ch
-    return $ Node nodeNew childrensNew
 
 traverseTreeFoldPar :: (r -> a -> r) -> (r -> a -> IO b)
                     -> r -> Tree a -> IO (Tree b)

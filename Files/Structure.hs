@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
@@ -5,12 +6,14 @@ module Files.Structure (
     unfoldFileTree,
     downloadTree,
     renameRoot,
-    isSingleNode
+    isSingleNode,
+    SIO
 ) where
 
 import           Control.Monad              (mapM)
 import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
+import           Data.Aeson
 import           Data.Foldable
 import           Data.Tree
 import           System.FilePath            ((</>))
@@ -20,39 +23,45 @@ import           Files.Node.NodeJSON
 import           Files.State
 import           Files.Tree
 import           Settings.Monad.Exception
+import           Settings.Monad.State
 import           Settings.Network
-import           TentativePush
 
 type TreeSeed = Either FileJSON FolderJSON
 
-unfoldFileTree :: MonadRIOE' m => TreeSeed -> m (Tree FSNode)
+type SIO m = (MonadIO m, MonadEnvState m)
+
+unfoldFileTree :: RIOE' m => TreeSeed -> m (Tree FSNode)
 unfoldFileTree = unfoldTreeM genTreeSeeds
 
 renameRoot :: String -> Tree FSNode -> Tree FSNode
 renameRoot newName (Node root xs) = Node (root { relativePath = newName }) xs
 
-downloadTree :: MonadIO m => FilePath -> Tree FSNode -> m DownloadState
+downloadTree :: SIO m => FilePath -> Tree FSNode -> m DownloadSummary
 downloadTree parent rootNode = fold <$> downloadTreeUncounted parent rootNode
 
-downloadTreeUncounted :: MonadIO m => FilePath -> Tree FSNode -> m (Tree DownloadState)
-downloadTreeUncounted fp tree =
-    liftIO $ traverseTreeFoldPar combinator writeAndCount fp tree
+downloadTreeUncounted :: SIO m => FilePath -> Tree FSNode -> m (Tree DownloadSummary)
+downloadTreeUncounted fp tree = do
+    chan <- get
+    liftIO $ traverseTreeFoldPar combinator (writeAndCount chan) fp tree
   where
     combinator l r = l </> relativePath r
 
-writeAndCount :: MonadIO m => FilePath -> FSNode -> m DownloadState
-writeAndCount parent node = do
+writeAndCount :: MonadIO m => EnvS -> FilePath -> FSNode -> m DownloadSummary
+writeAndCount chan parent node = do
     exist <- doesExist parent node
-    if exist then return singleExState else do
-        liftIO $ pipePush $ "Writing on path " ++ path ++ "..."
+    if exist then spitState $ singleExState path else do
         result <- liftIO $ runExceptT downloadExceptT
-        return $ either singleFaStateWith (const singleSuState) result
+        let state = either (singleFaStateWith path) (const $ singleSuState path) result
+        spitState state
   where
+    spitState state = do
+        liftIO $ writeChan chan $ toJSON state
+        return $ summarize state
     downloadExceptT :: ExceptT SomeException IO ()
     downloadExceptT = writeNode parent node
     path = parent </> relativePath node
 
-genTreeSeeds :: MonadRIOE' m => TreeSeed -> m (FSNode, [TreeSeed])
+genTreeSeeds :: RIOE' m => TreeSeed -> m (FSNode, [TreeSeed])
 genTreeSeeds (Left filej) = return (filejsonToNode filej, [])
 genTreeSeeds (Right folderj) = do
     filejsons <- canvasJSON $ files_url folderj

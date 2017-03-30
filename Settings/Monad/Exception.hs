@@ -13,9 +13,9 @@ import           Control.Exception
 import           Control.Monad.Except
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 
-type MonadIOE e m = (MonadIO m, MonadError e m, Exception e)
+type IOE e m = (MonadIO m, MonadError e m, Exception e)
 
-catchIOE :: MonadIOE e m => IO a -> m a
+catchIOE :: IOE e m => IO a -> m a
 catchIOE act = liftIO (try act) >>= eitherToE
 
 eitherToE :: MonadError e m => Either e a -> m a
