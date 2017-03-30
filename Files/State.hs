@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 
@@ -6,14 +7,30 @@ module Files.State where
 import           Control.Exception
 import           Data.Aeson
 import           Data.Monoid       ((<>))
+import           Data.Text         (Text)
 import           GHC.Generics
+
+instance ToJSON SomeException where
+    toJSON e = toJSON $ show e
+    toEncoding e = toEncoding $ show e
 
 data DownloadResult = DownloadResult {
     filePath :: String,
     result   :: ResultEnum
-}
+} deriving (Generic)
 
-data ResultEnum = Succeed | Exists | Failed SomeException
+instance ToJSON DownloadResult
+
+data ResultEnum = Succeed | Exists | Failed SomeException deriving (Generic)
+
+instance ToJSON ResultEnum where
+    toJSON Succeed = object ["code" .= ("succeed" :: Text)]
+    toJSON Exists = object ["code" .= ("exists" :: Text)]
+    toJSON (Failed ex) = object [
+        "code" .= ("failed" :: Text),
+        "diagnose" .= toJSON ex ]
+
+    toEncoding = genericToEncoding defaultOptions
 
 instance Show ResultEnum where
     show Succeed     = "was successfully written."
@@ -38,10 +55,6 @@ data DownloadSummary = DownloadSummary {
     failedN       :: Int,
     failureSample :: [SomeException]
 }
-
-instance ToJSON SomeException where
-    toJSON e = toJSON $ show e
-    toEncoding e = toEncoding $ show e
 
 instance ToJSON DownloadSummary where
     toJSON DownloadSummary {..} =

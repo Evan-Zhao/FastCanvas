@@ -12,16 +12,12 @@ import           Network.Wai.Handler.Warp
 import           Servant
 
 import           Communication.Format
+import           Course.File
 import qualified Course.List              as CL
 import           Files.State
-import           Frontend.Course.File
-import           Frontend.Initialize
 import           Settings.Monad.Global
 
 type API = "sync" :> Get '[JSON] ApiResponse
-
-type Global' = Global DownloadSummary
-type EnvS' = EnvS DownloadSummary
 
 startApp :: IO ()
 startApp = run 8080 app
@@ -40,7 +36,7 @@ server = do
     asyncResult <- liftIO $ async $ resultTup envR envS
     liftIO $ loopListening channel asyncResult
 
-loopListening :: EnvS' -> Async ApiResponse -> IO ApiResponse
+loopListening :: EnvS -> Async ApiResponse -> IO ApiResponse
 loopListening channel asyncR = do
     next <- readChan channel
     print next
@@ -50,17 +46,17 @@ loopListening channel asyncR = do
     this = loopListening channel asyncR
     reshape = return . ApiResponse . joinEither . fmap unResponse
 
-resultTup :: EnvR -> EnvS' -> IO ApiResponse
+resultTup :: EnvR -> EnvS -> IO ApiResponse
 resultTup envR envS = ApiResponse . (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
 
-mainG :: Global' [(CL.Course, DownloadSummary)]
+mainG :: Global [(CL.Course, DownloadSummary)]
 mainG = do
     this <- CL.thisTermCourse
     defPath <- lift $ asks getDefaultPath
     states <- mapM (downloadFromCourse defPath) this
     return $ zip this states
 
-setup :: IO (EnvR, EnvS')
+setup :: IO (EnvR, EnvS)
 setup = do
     maybeEnvR <- tryGetEnvR
     envR <- maybe (error "Config read fault!") return maybeEnvR

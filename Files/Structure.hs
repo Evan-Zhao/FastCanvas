@@ -13,6 +13,7 @@ module Files.Structure (
 import           Control.Monad              (mapM)
 import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
+import           Data.Aeson
 import           Data.Foldable
 import           Data.Tree
 import           System.FilePath            ((</>))
@@ -27,9 +28,7 @@ import           Settings.Network
 
 type TreeSeed = Either FileJSON FolderJSON
 
-type EnvS' = EnvS DownloadResult
-type MonadEnvState' m = MonadEnvState DownloadResult m
-type SIO m = (MonadIO m, MonadEnvState' m)
+type SIO m = (MonadIO m, MonadEnvState m)
 
 unfoldFileTree :: RIOE' m => TreeSeed -> m (Tree FSNode)
 unfoldFileTree = unfoldTreeM genTreeSeeds
@@ -47,7 +46,7 @@ downloadTreeUncounted fp tree = do
   where
     combinator l r = l </> relativePath r
 
-writeAndCount :: MonadIO m => EnvS' -> FilePath -> FSNode -> m DownloadSummary
+writeAndCount :: MonadIO m => EnvS -> FilePath -> FSNode -> m DownloadSummary
 writeAndCount chan parent node = do
     exist <- doesExist parent node
     if exist then spitState $ singleExState path else do
@@ -56,7 +55,7 @@ writeAndCount chan parent node = do
         spitState state
   where
     spitState state = do
-        liftIO $ writeChan chan state
+        liftIO $ writeChan chan $ toJSON state
         return $ summarize state
     downloadExceptT :: ExceptT SomeException IO ()
     downloadExceptT = writeNode parent node

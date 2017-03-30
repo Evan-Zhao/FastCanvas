@@ -8,15 +8,17 @@ module Settings.Monad.State (
     getEnvS,
     MonadEnvState,
     module Control.Monad.State,
-    module Control.Concurrent.Chan
+    module Control.Concurrent.Chan,
+    Value
 ) where
 
 import           Control.Concurrent.Chan
 import           Control.Monad.State
+import           Data.Aeson
 
-type EnvS a = Chan a
+type EnvS = Chan Value
 
-getEnvS :: IO (EnvS a)
+getEnvS :: IO EnvS
 getEnvS = newChan
 
-type MonadEnvState a m = MonadState (EnvS a) m
+type MonadEnvState m = MonadState EnvS m
