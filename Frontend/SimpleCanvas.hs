@@ -4,15 +4,13 @@ module Main (main) where
 
 import           Control.Concurrent
 import           Control.Exception
-import           Control.Monad              (mapM_, unless, void)
-import           Control.Monad.RWS.Strict
-import           Control.Monad.Trans.Except (runExceptT)
-import qualified Data.ByteString.Lazy       as L
+import           Control.Monad         (mapM_, unless, void)
+import qualified Data.ByteString.Lazy  as L
 import           System.Directory
-import           System.FilePath            (isRelative, (</>))
-import           Text.Read                  (readEither)
+import           System.FilePath       (isRelative, (</>))
+import           Text.Read             (readEither)
 
-import qualified Course.List                as CL
+import qualified Course.List           as CL
 import           Frontend.Course.File
 import           Frontend.Initialize
 import           Settings.Monad.Global
