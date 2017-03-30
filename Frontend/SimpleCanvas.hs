@@ -19,10 +19,9 @@ import           Settings.Monad.Global
 
 setup :: IO (EnvR, EnvS)
 setup = do
-    envR <- getEnvR
-    let path = getConfigPath envR
-    maybeEnvS <- tryGetEnvS path
-    envS <- maybe (queryEnvS path) return maybeEnvS
+    maybeEnvR <- tryGetEnvR
+    envR <- maybe (error "Config read fault!") return maybeEnvR
+    envS <- getEnvS
     return (envR, envS)
 
 mainAdaptor :: Global a -> IO a
@@ -47,7 +46,7 @@ mainG :: Global ()
 mainG = do
     liftIO $ putStrLn "Fetching course list...\n"
     this <- CL.thisTermCourse
-    defPath <- getDefaultPath <$> lift get
+    defPath <- asks getDefaultPath
     liftIO $ putStrLn $ "Will download to " ++ defPath ++ "\n"
     isExist <- liftIO $ checkDefaultPath defPath
     unless isExist $ liftIO $ putStrLn $

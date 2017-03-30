@@ -11,7 +11,6 @@ import           Network.HTTP.Simple
 import           Network.HTTP.Types.Header (hAuthorization)
 
 import           Settings.Monad.Exception
-import           Settings.Monad.State
 
 type MonadSIOE e m = (MonadEnvState m, MonadIOE e m)
 

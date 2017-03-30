@@ -7,18 +7,18 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import           System.Directory           (createDirectoryIfMissing,
                                              doesDirectoryExist)
 
-import           Settings.Monad.State
+import           Settings.Monad.Reader
 
-queryEnvS :: FilePath -> IO EnvS
-queryEnvS writePath = do
+queryEnvR :: FilePath -> IO EnvR
+queryEnvR writePath = do
     putStrLn "Settings file does not exist or is corrupted; please set your preference as follows:"
     userToken <- promptUserToken
     defaultPath <- promptDefaultPath
-    let envS = EnvS { getUserToken   = userToken,
-                      getDefaultPath = defaultPath }
-    let configString = toLazyByteString $ fromEncoding $ toEncoding envS
+    let envR = EnvRFiled { getUserToken'   = userToken,
+                           getDefaultPath' = defaultPath }
+    let configString = toLazyByteString $ fromEncoding $ toEncoding envR
     L.writeFile writePath configString
-    return envS
+    return $ merge envR
 
 promptUserToken :: IO String
 promptUserToken = putStrLn "\nPlease input your token from Canvas:" >> promptUserToken'

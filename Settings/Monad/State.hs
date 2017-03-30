@@ -5,9 +5,10 @@
 {-# LANGUAGE OverloadedStrings     #-}
 
 module Settings.Monad.State (
-    EnvS (..),
+    EnvS,
     MonadEnvState,
     tryGetEnvS,
+    getEnvS,
     module Control.Monad.State
 ) where
 
@@ -39,6 +40,9 @@ instance ToJSON EnvS where
                , "download_path" .= getDefaultPath envS
                ]
     toEncoding = genericToEncoding defaultOptions
+
+getEnvS :: IO EnvS
+getEnvS = return $ EnvS "" ""
 
 tryGetEnvS :: FilePath -> IO (Maybe EnvS)
 tryGetEnvS path = do
