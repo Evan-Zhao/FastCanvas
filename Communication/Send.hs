@@ -5,24 +5,23 @@ module Communication.Send where
 
 import           Control.Concurrent.Async
 import           Control.Concurrent.Chan
-import           Control.Monad              (mapM_, unless, void)
-import           Control.Monad.RWS.Strict
-import           Control.Monad.Trans.Except (runExceptT)
+import           Control.Monad            (mapM_, unless, void)
+import           Data.Aeson
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
 
 import           Communication.Format
-import qualified Course.List                as CL
-import           Data.Aeson
+import qualified Course.List              as CL
 import           Files.State
 import           Frontend.Course.File
 import           Frontend.Initialize
 import           Settings.Monad.Global
 
 type API = "sync" :> Get '[JSON] ApiResponse
-type EnvS' = EnvS DownloadState
-type Global' = Global DownloadState
+
+type Global' = Global DownloadSummary
+type EnvS' = EnvS DownloadSummary
 
 startApp :: IO ()
 startApp = run 8080 app
@@ -54,20 +53,12 @@ loopListening channel asyncR = do
 resultTup :: EnvR -> EnvS' -> IO ApiResponse
 resultTup envR envS = ApiResponse . (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
 
-mainG :: Global' [(CL.Course, DownloadState)]
+mainG :: Global' [(CL.Course, DownloadSummary)]
 mainG = do
     this <- CL.thisTermCourse
     defPath <- lift $ asks getDefaultPath
-    states <- mapM (getDownloadResult defPath) this
+    states <- mapM (downloadFromCourse defPath) this
     return $ zip this states
-
-getDownloadResult :: FilePath -> CL.Course -> Global' DownloadState
-getDownloadResult folder course = do
-    x <- getRootFromCourse id'
-    maybe emptyCourseResponse (nonemptyCourse courseName folder) x
-  where
-    id' = CL.id course
-    courseName = CL.courseShortName course
 
 setup :: IO (EnvR, EnvS')
 setup = do

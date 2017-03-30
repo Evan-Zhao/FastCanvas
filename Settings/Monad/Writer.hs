@@ -22,3 +22,5 @@ tellRecord :: (MonadWriter Record m, MonadIO m) => String -> m ()
 tellRecord event = do
     rec <- liftIO $ Record <$> getCurrentTime <*> myThreadId <*> return event
     tell rec
+
+type MonadEnvWriter m = MonadWriter EnvW m

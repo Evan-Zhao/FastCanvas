@@ -2,8 +2,7 @@
 
 module Files.Node.FSNode (
     module Files.Node.FSNode,
-    MonadDownload,
-    MonadIO
+    MonadDownload
 ) where
 
 import           Control.Monad.IO.Class     (MonadIO)

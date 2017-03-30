@@ -1,5 +1,4 @@
 {-# LANGUAGE ConstraintKinds       #-}
-{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
@@ -8,7 +7,8 @@ module Settings.Monad.State (
     EnvS,
     getEnvS,
     MonadEnvState,
-    module Control.Monad.State
+    module Control.Monad.State,
+    module Control.Concurrent.Chan
 ) where
 
 import           Control.Concurrent.Chan

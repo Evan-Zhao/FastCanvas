@@ -57,7 +57,7 @@ tryGetEnvRFiled path = do
     maybeEnvS <- runExceptT $ tryReadEnvRFiled path
     return $ either (const Nothing) Just maybeEnvS
 
-tryReadEnvRFiled :: MonadIOE SomeException m => FilePath -> m EnvRFiled
+tryReadEnvRFiled :: IOE SomeException m => FilePath -> m EnvRFiled
 tryReadEnvRFiled path = do
     file <- catchIOE $ L.readFile path
     eitherToE $ first fromString $ eitherDecode file

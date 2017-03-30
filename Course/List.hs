@@ -27,7 +27,7 @@ takeThisTermCourse = filter ((== thisTermId) . enrollment_term_id)
   where
     thisTermId = 86490000000000005
 
-thisTermCourse :: MonadRIOE' m => m [Course]
+thisTermCourse :: RIOE' m => m [Course]
 thisTermCourse = do
     respJSON <- canvasJSON "courses"
     return $ takeThisTermCourse respJSON
