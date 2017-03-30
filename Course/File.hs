@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
-module Frontend.Course.File where
+module Course.File where
 
 import           Control.Monad                       (unless, when)
 import           Control.Monad.Except
@@ -40,10 +40,3 @@ nonemptyCourse courseName folder root = do
     else do
         let fileTree' = renameRoot courseName fileTree
         downloadTree folder fileTree'
-
--- potentialError :: IOE SomeException m => m ()
--- potentialError = do
---     liftIO $ putStrLn "It is likely that something got wrong; enter Y to continue downloading; otherwise abort."
---     input <- liftIO getLine
---     let continue = not (null input) && head input == 'Y'
---     unless continue $ throwError $ fromString "Unknown error in downloading progress."
