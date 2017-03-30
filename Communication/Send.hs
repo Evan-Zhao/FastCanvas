@@ -3,6 +3,8 @@
 
 module Communication.Send where
 
+import           Control.Concurrent.Async
+import           Control.Concurrent.Chan
 import           Control.Monad              (mapM_, unless, void)
 import           Control.Monad.RWS.Strict
 import           Control.Monad.Trans.Except (runExceptT)
@@ -19,6 +21,8 @@ import           Frontend.Initialize
 import           Settings.Monad.Global
 
 type API = "sync" :> Get '[JSON] ApiResponse
+type EnvS' = EnvS DownloadState
+type Global' = Global DownloadState
 
 startApp :: IO ()
 startApp = run 8080 app
@@ -31,36 +35,48 @@ api = Proxy
 
 server :: Server API
 server = do
+    liftIO $ putStrLn "Caught!"
     (envR, envS) <- liftIO setup
-    result <- liftIO $ resultTup envR envS
-    return $ ApiResponse result
+    let channel = envS
+    asyncResult <- liftIO $ async $ resultTup envR envS
+    liftIO $ loopListening channel asyncResult
 
-resultTup :: EnvR -> EnvS -> IO (Either SomeException [(CL.Course, DownloadState)])
-resultTup envR envS = (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
+loopListening :: EnvS' -> Async ApiResponse -> IO ApiResponse
+loopListening channel asyncR = do
+    next <- readChan channel
+    print next
+    maybeR <- poll asyncR
+    maybe this reshape maybeR
+  where
+    this = loopListening channel asyncR
+    reshape = return . ApiResponse . joinEither . fmap unResponse
 
-mainG :: Global [(CL.Course, DownloadState)]
+resultTup :: EnvR -> EnvS' -> IO ApiResponse
+resultTup envR envS = ApiResponse . (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
+
+mainG :: Global' [(CL.Course, DownloadState)]
 mainG = do
-    liftIO $ putStrLn "Fetching course list...\n"
     this <- CL.thisTermCourse
-    defPath <- getDefaultPath <$> lift get
-    liftIO $ putStrLn $ "Will download to " ++ defPath ++ "\n"
+    defPath <- lift $ asks getDefaultPath
     states <- mapM (getDownloadResult defPath) this
     return $ zip this states
 
-getDownloadResult :: FilePath -> CL.Course -> Global DownloadState
+getDownloadResult :: FilePath -> CL.Course -> Global' DownloadState
 getDownloadResult folder course = do
-    liftIO $ putStrLn $ "\nNow downloading for course " ++ courseName
-    liftIO $ putStrLn "Counting files..."
     x <- getRootFromCourse id'
     maybe emptyCourseResponse (nonemptyCourse courseName folder) x
   where
     id' = CL.id course
     courseName = CL.courseShortName course
 
-setup :: IO (EnvR, EnvS)
+setup :: IO (EnvR, EnvS')
 setup = do
-    envR <- getEnvR
-    let path = getConfigPath envR
-    maybeEnvS <- tryGetEnvS path
-    envS <- maybe (queryEnvS path) return maybeEnvS
+    maybeEnvR <- tryGetEnvR
+    envR <- maybe (error "Config read fault!") return maybeEnvR
+    envS <- getEnvS
     return (envR, envS)
+
+joinEither :: Either e (Either e a) -> Either e a
+joinEither (Left ex)           = Left ex
+joinEither (Right (Left ex))   = Left ex
+joinEither (Right (Right val)) = Right val

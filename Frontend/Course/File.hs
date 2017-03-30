@@ -21,7 +21,7 @@ getRootFromCourse id' = do
     foldersJSON <- canvasJSON $ "courses/" ++ show id' ++ "/folders"
     return $ find ((==Nothing) . parent_folder_id) (foldersJSON :: [FolderJSON])
 
-downloadFromCourse :: MonadRIOE' m => FilePath -> C.Course -> m ()
+downloadFromCourse :: (MonadRIOE' m, MonadSIO m) => FilePath -> C.Course -> m ()
 downloadFromCourse folder course = do
     liftIO $ putStrLn $ "\nNow downloading for course " ++ courseName
     liftIO $ putStrLn "Counting files..."
@@ -34,20 +34,20 @@ downloadFromCourse folder course = do
 
 escape :: MonadIO m => String -> m DownloadState
 escape str = do
-    liftIO $ putStrLn str
+    --liftIO $ putStrLn str
     return mempty
 
 emptyCourseResponse :: MonadIO m => m DownloadState
 emptyCourseResponse = escape "Empty file list; skipping."
 
-nonemptyCourse :: MonadRIOE' m => String -> FilePath -> FolderJSON -> m DownloadState
+nonemptyCourse :: (MonadRIOE' m, MonadSIO m) => String -> FilePath -> FolderJSON -> m DownloadState
 nonemptyCourse courseName folder root = do
     fileTree <- unfoldFileTree (Right root)
     if isSingleNode fileTree
     then escape $ "Course " ++ courseName ++ " has empty file list."
     else do
         let fileTree' = renameRoot courseName fileTree
-        liftIO $ putStrLn $ "Files (folders) to download: " ++ show (length fileTree)
+        --liftIO $ putStrLn $ "Files (folders) to download: " ++ show (length fileTree)
         downloadTree folder fileTree'
 
 potentialError :: MonadIOE SomeException m => m ()

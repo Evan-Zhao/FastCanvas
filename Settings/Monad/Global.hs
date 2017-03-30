@@ -16,4 +16,4 @@ import           Settings.Monad.Reader
 import           Settings.Monad.State
 import           Settings.Monad.Writer
 
-type Global = ExceptT SomeException (RWST EnvR EnvW EnvS IO)
+type Global a = ExceptT SomeException (RWST EnvR EnvW (EnvS a) IO)

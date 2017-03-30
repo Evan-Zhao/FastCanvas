@@ -33,9 +33,9 @@ downloadTo url path = do
         let contentLength = findContentLength hs
         maybe noLengthInfo (haveLengthInfo resp) contentLength
     where
-      noLengthInfo = liftIO $ printf "Length info not provided"
+      noLengthInfo = return ()--liftIO $ printf "Length info not provided"
       haveLengthInfo resp len = do
-        liftIO $ printf "content length : %d \n" len
+        --liftIO $ printf "content length : %d \n" len
         -- bar <- liftIO $ newProgressBar def { pgTotal = len
         --                                    , pgWidth = 100
         --                                    , pgOnCompletion = Just "Download done"
@@ -67,5 +67,5 @@ countBytes acc total = do
         Just b  -> do
             let lenInt = B.length b
             yield b
-            --liftIO $ tickN bar lenInt
+            --liftIO $ putStrLn $ show acc ++ "/" ++ show total
             countBytes (acc + fromIntegral lenInt) total

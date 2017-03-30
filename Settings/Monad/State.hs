@@ -7,14 +7,16 @@
 module Settings.Monad.State (
     EnvS,
     getEnvS,
+    MonadEnvState,
     module Control.Monad.State
 ) where
 
+import           Control.Concurrent.Chan
 import           Control.Monad.State
 
-data EnvS = EnvS deriving (Show)
+type EnvS a = Chan a
 
-getEnvS :: IO EnvS
-getEnvS = return EnvS
+getEnvS :: IO (EnvS a)
+getEnvS = newChan
 
-type MonadEnvState m = MonadState EnvS m
+type MonadEnvState a m = MonadState (EnvS a) m
