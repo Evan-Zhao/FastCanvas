@@ -6,20 +6,22 @@ import           Control.Exception
 import           Control.Monad              (mapM_, unless, void)
 import           Control.Monad.RWS.Strict
 import           Control.Monad.Trans.Except (runExceptT)
+import qualified Data.ByteString.Lazy       as L
 import           System.Directory
 import           System.FilePath            (isRelative, (</>))
 import           Text.Read                  (readEither)
 
 import           Course.File
 import qualified Course.List                as CL
+import           Settings.Initialize
 import           Settings.Monad.Global
-
-import qualified Data.ByteString.Lazy       as L
 
 mainAdaptor :: Global a -> IO a
 mainAdaptor g = do
     envR <- getEnvR
-    envS <- getEnvS
+    let path = getConfigPath envR
+    maybeEnvS <- tryGetEnvS path
+    envS <- maybe (queryEnvS path) return maybeEnvS
     (result, envNewS, logged) <- runRWST (runExceptT g) envR envS
     return $ takeout result
   where
@@ -28,7 +30,9 @@ mainAdaptor g = do
 main :: IO ()
 main = do
     envR <- getEnvR
-    envS <- getEnvS
+    let path = getConfigPath envR
+    maybeEnvS <- tryGetEnvS path
+    envS <- maybe (queryEnvS path) return maybeEnvS
     (result, envNewS, logged) <- runRWST (runExceptT mainG) envR envS
     either printException return result
 
