@@ -25,7 +25,7 @@ import           TentativePush
 
 type TreeSeed = Either FileJSON FolderJSON
 
-unfoldFileTree :: MonadRIOE' m => TreeSeed -> m (Tree FSNode)
+unfoldFileTree :: MonadFull' m => TreeSeed -> m (Tree FSNode)
 unfoldFileTree = unfoldTreeM genTreeSeeds
 
 renameRoot :: String -> Tree FSNode -> Tree FSNode
@@ -52,7 +52,7 @@ writeAndCount parent node = do
     downloadExceptT = writeNode parent node
     path = parent </> relativePath node
 
-genTreeSeeds :: MonadRIOE' m => TreeSeed -> m (FSNode, [TreeSeed])
+genTreeSeeds :: MonadFull' m => TreeSeed -> m (FSNode, [TreeSeed])
 genTreeSeeds (Left filej) = return (filejsonToNode filej, [])
 genTreeSeeds (Right folderj) = do
     filejsons <- canvasJSON $ files_url folderj

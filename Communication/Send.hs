@@ -11,10 +11,11 @@ import           Network.Wai.Handler.Warp
 import           Servant
 
 import           Communication.Format
-import           Course.File
 import qualified Course.List                as CL
 import           Data.Aeson
 import           Files.State
+import           Frontend.Course.File
+import           Frontend.Initialize
 import           Settings.Monad.Global
 
 type API = "sync" :> Get '[JSON] ApiResponse
@@ -30,17 +31,9 @@ api = Proxy
 
 server :: Server API
 server = do
-    envR <- liftIO getEnvR
-    envS <- liftIO getEnvS
+    (envR, envS) <- liftIO setup
     result <- liftIO $ resultTup envR envS
     return $ ApiResponse result
-
-main' :: IO ()
-main' = do
-    envR <- liftIO getEnvR
-    envS <- liftIO getEnvS
-    result <- liftIO $ resultTup envR envS
-    print $ toJSON $ ApiResponse result
 
 resultTup :: EnvR -> EnvS -> IO (Either SomeException [(CL.Course, DownloadState)])
 resultTup envR envS = (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
@@ -63,3 +56,11 @@ getDownloadResult folder course = do
   where
     id' = CL.id course
     courseName = CL.courseShortName course
+
+setup :: IO (EnvR, EnvS)
+setup = do
+    envR <- getEnvR
+    let path = getConfigPath envR
+    maybeEnvS <- tryGetEnvS path
+    envS <- maybe (queryEnvS path) return maybeEnvS
+    return (envR, envS)

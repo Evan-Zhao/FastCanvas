@@ -5,8 +5,7 @@
 
 module Settings.Endpoint.Paginate (
     NaviLinks (..),
-    getNaviLinks,
-    MonadIOE'
+    getNaviLinks
 ) where
 
 import           Control.Exception                   hiding (try)
@@ -27,8 +26,6 @@ data NaviLinks = NaviLinks {
     nfirst   :: String,
     nlast    :: Maybe String -- not if too expensive to get total pages
 }
-
-type MonadIOE' m = MonadIOE SomeException m
 
 linkHeaderP = sepBy singleEntryP (char ',') where
     singleEntryP = do

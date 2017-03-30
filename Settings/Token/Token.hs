@@ -1,23 +1,22 @@
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
 module Settings.Token.Token where
 
 import           Control.Monad.Except
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Char8     as L
 import           Network.HTTP.Simple
-import           Network.HTTP.Types.Header  (hAuthorization)
+import           Network.HTTP.Types.Header (hAuthorization)
 
 import           Settings.Monad.Exception
+import           Settings.Monad.State
 
-tokenFilePath :: FilePath
-tokenFilePath = "Assets/TokenRaw/Token.txt"
+type MonadSIOE e m = (MonadEnvState m, MonadIOE e m)
 
-tokenE :: MonadIOE e m => m L.ByteString
-tokenE = catchIOE $ L.readFile tokenFilePath
+addTokenTo :: String -> Request -> Request
+addTokenTo tokenBS = addRequestHeader hAuthorization (L.pack $ "Bearer " ++ tokenBS)
 
-addTokenTo :: L.ByteString -> Request -> Request
-addTokenTo tokenBS = addRequestHeader hAuthorization (L.toStrict $ "Bearer " `L.append` tokenBS)
-
-addToken :: MonadIOE e m => Request -> m Request
-addToken req = addTokenTo <$> tokenE <*> return req
+addToken :: MonadSIOE e m => Request -> m Request
+addToken req = addTokenTo <$> gets getUserToken <*> return req

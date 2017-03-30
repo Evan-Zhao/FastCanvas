@@ -16,12 +16,12 @@ import           Settings.Exception.GeneralException
 import           Settings.Monad.Exception
 import           Settings.Network
 
-getRootFromCourse :: MonadRIOE' m => C.CourseID -> m (Maybe FolderJSON)
+getRootFromCourse :: MonadFull' m => C.CourseID -> m (Maybe FolderJSON)
 getRootFromCourse id' = do
     foldersJSON <- canvasJSON $ "courses/" ++ show id' ++ "/folders"
     return $ find ((==Nothing) . parent_folder_id) (foldersJSON :: [FolderJSON])
 
-downloadFromCourse :: MonadRIOE' m => FilePath -> C.Course -> m ()
+downloadFromCourse :: MonadFull' m => FilePath -> C.Course -> m ()
 downloadFromCourse folder course = do
     liftIO $ putStrLn $ "\nNow downloading for course " ++ courseName
     liftIO $ putStrLn "Counting files..."
@@ -40,7 +40,7 @@ escape str = do
 emptyCourseResponse :: MonadIO m => m DownloadState
 emptyCourseResponse = escape "Empty file list; skipping."
 
-nonemptyCourse :: MonadRIOE' m => String -> FilePath -> FolderJSON -> m DownloadState
+nonemptyCourse :: MonadFull' m => String -> FilePath -> FolderJSON -> m DownloadState
 nonemptyCourse courseName folder root = do
     fileTree <- unfoldFileTree (Right root)
     if isSingleNode fileTree

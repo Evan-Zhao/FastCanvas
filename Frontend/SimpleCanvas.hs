@@ -14,10 +14,10 @@ import           Text.Read                  (readEither)
 
 import qualified Course.List                as CL
 import           Frontend.Course.File
-import           Settings.Initialize
+import           Frontend.Initialize
 import           Settings.Monad.Global
 
-setup :: Global (EnvR, EnvS)
+setup :: IO (EnvR, EnvS)
 setup = do
     envR <- getEnvR
     let path = getConfigPath envR
@@ -27,14 +27,14 @@ setup = do
 
 mainAdaptor :: Global a -> IO a
 mainAdaptor g = do
-    (result, envNewS, logged) <- uncurry (runRWST $ runExceptT g) <$> setup
+    (result, envNewS, logged) <- setup >>= uncurry (runRWST $ runExceptT g)
     return $ takeout result
   where
     takeout (Right a) = a
 
 main :: IO ()
 main = do
-    (result, envNewS, logged) <- uncurry (runRWST $ runExceptT g) <$> setup
+    (result, envNewS, logged) <- setup >>=uncurry (runRWST $ runExceptT mainG)
     either printException return result
 
 printException :: (Exception e) => e -> IO ()

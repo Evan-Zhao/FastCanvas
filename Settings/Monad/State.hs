@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -5,9 +6,12 @@
 
 module Settings.Monad.State (
     EnvS (..),
-    tryGetEnvS
+    MonadEnvState,
+    tryGetEnvS,
+    module Control.Monad.State
 ) where
 
+import           Control.Monad.State
 import           Control.Monad.Trans.Except
 import           Data.Aeson
 import           Data.Aeson.Types
@@ -45,3 +49,5 @@ tryReadEnvS :: MonadIOE SomeException m => FilePath -> m EnvS
 tryReadEnvS path = do
     file <- catchIOE $ L.readFile path
     eitherToE $ first fromString $ eitherDecode file
+
+type MonadEnvState m = MonadState EnvS m

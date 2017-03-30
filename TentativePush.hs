@@ -1,4 +1,4 @@
 module TentativePush where
 
-pipepush :: IO ()
-pipepush = putStrLn
+pipePush :: String -> IO ()
+pipePush = putStrLn
