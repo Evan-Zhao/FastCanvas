@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
-module Course.File where
+module Frontend.Course.File where
 
 import           Control.Monad                       (unless, when)
 import           Control.Monad.Except

@@ -9,6 +9,7 @@ module Files.Structure (
 ) where
 
 import           Control.Monad              (mapM)
+import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
 import           Data.Foldable
 import           Data.Tree
@@ -20,6 +21,7 @@ import           Files.State
 import           Files.Tree
 import           Settings.Monad.Exception
 import           Settings.Network
+import           TentativePush
 
 type TreeSeed = Either FileJSON FolderJSON
 
@@ -33,14 +35,16 @@ downloadTree :: MonadIO m => FilePath -> Tree FSNode -> m DownloadState
 downloadTree parent rootNode = fold <$> downloadTreeUncounted parent rootNode
 
 downloadTreeUncounted :: MonadIO m => FilePath -> Tree FSNode -> m (Tree DownloadState)
-downloadTreeUncounted = traverseTreeFold combinator writeAndCount where
+downloadTreeUncounted fp tree =
+    liftIO $ traverseTreeFoldPar combinator writeAndCount fp tree
+  where
     combinator l r = l </> relativePath r
 
 writeAndCount :: MonadIO m => FilePath -> FSNode -> m DownloadState
 writeAndCount parent node = do
     exist <- doesExist parent node
     if exist then return singleExState else do
-        liftIO $ putStrLn $ "Writing on path " ++ path ++ "..."
+        liftIO $ pipePush $ "Writing on path " ++ path ++ "..."
         result <- liftIO $ runExceptT downloadExceptT
         return $ either singleFaStateWith (const singleSuState) result
   where
