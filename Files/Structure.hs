@@ -27,7 +27,8 @@ import           Settings.Network
 
 type TreeSeed = Either FileJSON FolderJSON
 
-type MonadEnvState' m = MonadEnvState DownloadSummary m
+type EnvS' = EnvS DownloadResult
+type MonadEnvState' m = MonadEnvState DownloadResult m
 type SIO m = (MonadIO m, MonadEnvState' m)
 
 unfoldFileTree :: RIOE' m => TreeSeed -> m (Tree FSNode)
@@ -39,22 +40,24 @@ renameRoot newName (Node root xs) = Node (root { relativePath = newName }) xs
 downloadTree :: SIO m => FilePath -> Tree FSNode -> m DownloadSummary
 downloadTree parent rootNode = fold <$> downloadTreeUncounted parent rootNode
 
-downloadTreeUncounted :: (MonadIO m, MonadState (EnvS DownloadSummary) m) => FilePath -> Tree FSNode -> m (Tree DownloadSummary)
+downloadTreeUncounted :: SIO m => FilePath -> Tree FSNode -> m (Tree DownloadSummary)
 downloadTreeUncounted fp tree = do
     chan <- get
     liftIO $ traverseTreeFoldPar combinator (writeAndCount chan) fp tree
   where
     combinator l r = l </> relativePath r
 
-writeAndCount :: MonadIO m => EnvS DownloadSummary -> FilePath -> FSNode -> m DownloadSummary
+writeAndCount :: MonadIO m => EnvS' -> FilePath -> FSNode -> m DownloadSummary
 writeAndCount chan parent node = do
     exist <- doesExist parent node
-    if exist then return singleExState else do
+    if exist then spitState $ singleExState path else do
         result <- liftIO $ runExceptT downloadExceptT
-        let state = either singleFaStateWith (const singleSuState) result
-        liftIO $ writeChan chan state
-        return state
+        let state = either (singleFaStateWith path) (const $ singleSuState path) result
+        spitState state
   where
+    spitState state = do
+        liftIO $ writeChan chan state
+        return $ summarize state
     downloadExceptT :: ExceptT SomeException IO ()
     downloadExceptT = writeNode parent node
     path = parent </> relativePath node

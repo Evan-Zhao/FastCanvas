@@ -9,8 +9,8 @@ import           Data.Monoid       ((<>))
 import           GHC.Generics
 
 data DownloadResult = DownloadResult {
-    filePath       :: String,
-    downloadResult :: ResultEnum
+    filePath :: String,
+    result   :: ResultEnum
 }
 
 data ResultEnum = Succeed | Exists | Failed SomeException
@@ -22,7 +22,15 @@ instance Show ResultEnum where
 
 instance Show DownloadResult where
     show DownloadResult{..} =
-        "Entry " ++ filePath ++ " " ++ show downloadResult
+        "Entry " ++ filePath ++ " " ++ show result
+
+singleExState, singleSuState :: FilePath -> DownloadResult
+singleExState path = DownloadResult path Exists
+singleSuState path = DownloadResult path Succeed
+
+singleFaStateWith :: FilePath -> SomeException -> DownloadResult
+singleFaStateWith path ex = DownloadResult path (Failed ex)
+
 
 data DownloadSummary = DownloadSummary {
     existN        :: Int,
@@ -69,13 +77,7 @@ instance Monoid DownloadSummary where
         failureSample = failureSample state2 ++ failureSample state1
     }
 
-isAllFail :: DownloadSummary -> Bool
-isAllFail (DownloadSummary 0 0 f _) = f /= 0
-isAllFail _                         = False
-
-singleExState, singleSuState :: DownloadSummary
-singleExState = DownloadSummary 1 0 0 []
-singleSuState = DownloadSummary 0 1 0 []
-
-singleFaStateWith :: SomeException -> DownloadSummary
-singleFaStateWith = DownloadSummary 0 0 1 . (:[])
+summarize :: DownloadResult -> DownloadSummary
+summarize (DownloadResult path Succeed) = DownloadSummary 0 1 0 []
+summarize (DownloadResult path Exists) = DownloadSummary 1 0 0 []
+summarize (DownloadResult path (Failed reason)) = DownloadSummary 0 1 0 [reason]
