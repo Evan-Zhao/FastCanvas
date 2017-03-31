@@ -9,33 +9,35 @@ import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
 
-import           Communication.Format
 import           Course.File
 import qualified Course.List                 as CL
 import           Files.State
 import           Settings.Exception.Prettify
 import           Settings.Monad.Global
 
-type API = "sync" :> Get '[JSON] ApiResponse
+type Excepted a = Either SomeException a
 
-startApp :: IO ()
-startApp = run 8080 app
+type SyncResult = Excepted [(CL.Course, DownloadSummary)]
+type CoursesResult = Excepted [CL.Course]
 
-app :: Application
-app = serve api server
-
-api :: Proxy API
-api = Proxy
+type API = "sync" :> Get '[JSON] SyncResult
+      :<|> "courses" :> Get '[JSON] CoursesResult
 
 server :: Server API
-server = do
-    liftIO $ putStrLn "Caught!"
-    (envR, envS) <- liftIO setup
-    let channel = envS
-    asyncResult <- liftIO $ async $ resultTup envR envS
-    liftIO $ loopListening channel asyncResult
+server = liftIO sync :<|> liftIO courses
 
-loopListening :: EnvS -> Async MainReturn -> IO ApiResponse
+courses :: IO CoursesResult
+courses = do
+    putStrLn "endpoint: \"courses\""
+    runGlobal CL.thisTermCourse
+
+sync :: IO SyncResult
+sync = do
+    putStrLn "endpoint: \"sync\""
+    (channel, asyncResult) <- runGlobalAsync syncG
+    loopListening channel asyncResult
+
+loopListening :: EnvS -> Async SyncResult -> IO SyncResult
 loopListening channel asyncR = do
     next <- readChan channel
     print next
@@ -45,13 +47,19 @@ loopListening channel asyncR = do
     this = loopListening channel asyncR
     reshape = return . prettifyException . joinEither
 
-resultTup :: EnvR -> EnvS -> IO MainReturn
-resultTup envR envS = (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
+runGlobal :: Global a -> IO (Excepted a)
+runGlobal g = do
+    (envR, envS) <- setup
+    (\(a,_,_) -> a) <$> runRWST (runExceptT g) envR envS
 
-type MainReturn = Either SomeException [(CL.Course, DownloadSummary)]
+runGlobalAsync :: Global a -> IO (EnvS, Async (Excepted a))
+runGlobalAsync g = do
+    (envR, envS) <- setup
+    asynced <- async $ (\(a,_,_) -> a) <$> runRWST (runExceptT g) envR envS
+    return (envS, asynced)
 
-mainG :: Global [(CL.Course, DownloadSummary)]
-mainG = do
+syncG :: Global [(CL.Course, DownloadSummary)]
+syncG = do
     this <- CL.thisTermCourse
     defPath <- lift $ asks getDefaultPath
     states <- mapM (downloadFromCourse defPath) this
@@ -68,3 +76,12 @@ joinEither :: Either e (Either e a) -> Either e a
 joinEither (Left ex)           = Left ex
 joinEither (Right (Left ex))   = Left ex
 joinEither (Right (Right val)) = Right val
+
+startApp :: IO ()
+startApp = run 8080 app
+
+app :: Application
+app = serve api server
+
+api :: Proxy API
+api = Proxy

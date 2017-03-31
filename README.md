@@ -28,14 +28,14 @@ The outcome:
 
 ## TODO
 
-* Make exceptions friendly to frontend by using a custom `show` function improving readability of exceptions.
+* [ ] Make exceptions friendly to frontend by using a custom `show` function improving readability of exceptions.
 
-* Make `courses` also an endpoint, so that frontend can get course list.
+* [x] Make `courses` also an endpoint, so that frontend can get course list.
 
-* Add git-like version control system; it can be a much simplified version.
+* [ ] Add git-like version control system; it can be a much simplified version.
 
-* Add remapping of files: a list of `filter` rules selecting files, and a list of `remapping` rules to modify and move them. 
+* [ ] Add remapping of files: a list of `filter` rules selecting files, and a list of `remapping` rules to modify and move them. 
 
     For example, I want to move all files satisfying regex "lecture\d*_ve216_ch\d*" to "Handout\$2\Lecture$1".
     
-* Have a frontend. It could well be Electron, or others.
+* [ ] Have a frontend. It could well be Electron, or others.
