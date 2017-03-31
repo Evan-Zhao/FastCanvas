@@ -4,9 +4,8 @@
 
 module Settings.Monad.Exception (
     module Settings.Monad.Exception,
-    SomeException,
-    liftIO,
-    MonadError
+    module Control.Monad.Except,
+    SomeException
 ) where
 
 import           Control.Exception

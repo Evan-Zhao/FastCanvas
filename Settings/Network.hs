@@ -4,17 +4,19 @@
 
 module Settings.Network  where
 
-import           Control.Monad                       ((>=>))
+import           Control.Exception                        (throw, toException)
+import           Control.Monad                            (unless, (>=>))
 import           Data.Aeson
-import           Data.Aeson.Types                    ()
-import qualified Data.ByteString.Char8               as S
-import qualified Data.ByteString.Lazy.Char8          as L
-import           Data.List                           (isInfixOf)
+import           Data.Aeson.Types                         ()
+import qualified Data.ByteString.Char8                    as S
+import qualified Data.ByteString.Lazy.Char8               as L
+import           Data.List                                (isInfixOf)
 import           Network.HTTP.Simple
-import           Network.HTTP.Types.Header           (hAuthorization)
+import           Network.HTTP.Types.Header                (hAuthorization)
 
 import           Settings.Endpoint.Paginate
 import           Settings.Exception.GeneralException
+import           Settings.Exception.ResponseCodeException
 import           Settings.Monad.Exception
 import           Settings.Monad.Reader
 
@@ -30,19 +32,24 @@ canvasJSON' = parseRequestNoToken >=> canvasJSONGo
 canvasJSONGo :: (FromJSON a, RIOE' m) => Request -> m [a]
 canvasJSONGo req = do
     jsonsResp <- catchIOE $ httpJSON req
+    throwCodeError req jsonsResp
     let jsons = getResponseBody jsonsResp
     nextJSONhref <- nnext <$> getNaviLinks jsonsResp
     (jsons ++) <$> maybe (return []) (parseRequestAddToken >=> canvasJSONGo) nextJSONhref
   where
     jsonE = fromString "JSON format error."
 
-canvasLBS, canvasLBS' :: RIOE e m => String -> m L.ByteString
+canvasLBS, canvasLBS' :: RIOE' m => String -> m L.ByteString
 canvasLBS url  = do
     req <- parseRequestAddToken url
-    catchIOE $ getResponseBody <$> httpLBS req
+    resp <- httpLBS req
+    throwCodeError req resp
+    return $ getResponseBody resp
 canvasLBS' url = do
     req <- parseRequestNoToken url
-    catchIOE $ getResponseBody <$> httpLBS req
+    resp <- httpLBS req
+    throwCodeError req resp
+    return $ getResponseBody resp
 
 addTokenTo :: String -> Request -> Request
 addTokenTo tokenBS = addRequestHeader hAuthorization (S.pack $ "Bearer " ++ tokenBS)
@@ -59,4 +66,11 @@ prependHost path = if isAbsolute path then return path
 
 parseRequestAddToken, parseRequestNoToken :: RIOE e m => String -> m Request
 parseRequestAddToken url = parseRequestNoToken url >>= addToken
-parseRequestNoToken url  = prependHost url >>= (liftIO . parseRequest)
+parseRequestNoToken url  = prependHost url >>= (catchIOE . parseRequest)
+
+throwCodeError :: MonadError SomeException m
+               => Request -> Response a -> m ()
+throwCodeError req resp = unless (code == 200) $ throwError err
+    where
+        err = toException $ ResponseCodeException req code
+        code = getResponseStatusCode resp
