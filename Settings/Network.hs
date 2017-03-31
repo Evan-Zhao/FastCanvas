@@ -29,9 +29,9 @@ canvasJSON' = parseRequestNoToken >=> canvasJSONGo
 
 canvasJSONGo :: (FromJSON a, RIOE' m) => Request -> m [a]
 canvasJSONGo req = do
-    resp <- catchIOE $ httpLBS req
-    jsons <- maybeToEWith jsonE $ decode $ getResponseBody resp
-    nextJSONhref <- nnext <$> getNaviLinks resp
+    jsonsResp <- catchIOE $ httpJSON req
+    jsons <- getResponseBody jsonsResp
+    nextJSONhref <- nnext <$> getNaviLinks jsonsResp
     (jsons ++) <$> maybe (return []) (parseRequestAddToken >=> canvasJSONGo) nextJSONhref
   where
     jsonE = fromString "JSON format error."
