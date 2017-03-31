@@ -28,9 +28,11 @@ The outcome:
 
 ## TODO
 
-* [ ] Make exceptions friendly to frontend by using a custom `show` function improving readability of exceptions.
+* [x] Make exceptions friendly to frontend by using a custom `show` function improving readability of exceptions. 
 
-* [x] Make `courses` also an endpoint, so that frontend can get course list.
+    (Basically done)
+
+* [x] Make `courses` also an endpoint, so that frontend can get course list. (Completed)
 
 * [ ] Add git-like version control system; it can be a much simplified version.
 
