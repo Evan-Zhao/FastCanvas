@@ -7,9 +7,10 @@ import           Data.Maybe                                (catMaybes,
                                                             fromMaybe)
 
 import           Settings.Exception.Prettify.HttpException
+import           Settings.Exception.Prettify.JSONException
 
 dispatches :: [SomeException -> Maybe String]
-dispatches = [pHttpException]
+dispatches = [pHttpException, pJSONException]
 
 findFirstJust :: [Maybe a] -> Maybe a
 findFirstJust maybes = if null cat then Nothing else Just $ head cat where

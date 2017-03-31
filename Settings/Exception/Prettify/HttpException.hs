@@ -1,7 +1,8 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module Settings.Exception.Prettify.HttpException (
-    pHttpException
+    pHttpException,
+    getReqStringHost
 ) where
 
 import           Control.Exception
