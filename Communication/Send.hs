@@ -11,8 +11,9 @@ import           Servant
 
 import           Communication.Format
 import           Course.File
-import qualified Course.List              as CL
+import qualified Course.List                 as CL
 import           Files.State
+import           Settings.Exception.Prettify
 import           Settings.Monad.Global
 
 type API = "sync" :> Get '[JSON] ApiResponse
@@ -34,7 +35,7 @@ server = do
     asyncResult <- liftIO $ async $ resultTup envR envS
     liftIO $ loopListening channel asyncResult
 
-loopListening :: EnvS -> Async ApiResponse -> IO ApiResponse
+loopListening :: EnvS -> Async MainReturn -> IO ApiResponse
 loopListening channel asyncR = do
     next <- readChan channel
     print next
@@ -42,10 +43,12 @@ loopListening channel asyncR = do
     maybe this reshape maybeR
   where
     this = loopListening channel asyncR
-    reshape = return . ApiResponse . joinEither . fmap unResponse
+    reshape = return . prettifyException . joinEither
 
-resultTup :: EnvR -> EnvS -> IO ApiResponse
-resultTup envR envS = ApiResponse . (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
+resultTup :: EnvR -> EnvS -> IO MainReturn
+resultTup envR envS = (\(a,_,_) -> a) <$> runRWST (runExceptT mainG) envR envS
+
+type MainReturn = Either SomeException [(CL.Course, DownloadSummary)]
 
 mainG :: Global [(CL.Course, DownloadSummary)]
 mainG = do

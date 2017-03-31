@@ -5,7 +5,9 @@
 
 module Course.List (
     thisTermCourse,
-    courseShortName
+    courseShortName,
+    Course (..),
+    CourseID
 ) where
 
 import           Data.Aeson
