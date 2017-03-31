@@ -7,7 +7,6 @@ module Settings.Network  where
 import           Control.Monad                       ((>=>))
 import           Data.Aeson
 import           Data.Aeson.Types                    ()
-import           Data.Bifunctor
 import qualified Data.ByteString.Char8               as S
 import qualified Data.ByteString.Lazy.Char8          as L
 import           Data.List                           (isInfixOf)
@@ -18,6 +17,8 @@ import           Settings.Endpoint.Paginate
 import           Settings.Exception.GeneralException
 import           Settings.Monad.Exception
 import           Settings.Monad.Reader
+
+type RIO m = (MonadEnvReader m, MonadIO m)
 
 type RIOE e m = (MonadEnvReader m, IOE e m)
 type RIOE' m = (MonadEnvReader m, IOE SomeException m)
@@ -46,15 +47,15 @@ canvasLBS' url = do
 addTokenTo :: String -> Request -> Request
 addTokenTo tokenBS = addRequestHeader hAuthorization (S.pack $ "Bearer " ++ tokenBS)
 
-addToken :: RIOE e m => Request -> m Request
+addToken :: RIO m => Request -> m Request
 addToken req = addTokenTo <$> asks getUserToken <*> return req
 
 isAbsolute :: String -> Bool
 isAbsolute = isInfixOf "://"
 
-prependHost :: RIOE e m => String -> m String
+prependHost :: RIO m => String -> m String
 prependHost path = if isAbsolute path then return path
-                   else flip (++) path <$> reader getHost
+                   else flip (++) path <$> asks getHost
 
 parseRequestAddToken, parseRequestNoToken :: RIOE e m => String -> m Request
 parseRequestAddToken url = parseRequestNoToken url >>= addToken

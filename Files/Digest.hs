@@ -3,7 +3,6 @@
 module Files.Digest where
 
 import           Control.Monad            ((>=>))
-import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import           Crypto.Hash
 import           Data.Aeson
 import qualified Data.ByteString.Lazy     as Lazy

@@ -2,18 +2,18 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
-module Course.File where
+module Course.File (
+    getRootFromCourse,
+    downloadFromCourse
+) where
 
-import           Control.Monad                       (unless, when)
 import           Control.Monad.Except
-import qualified Course.List                         as C
-import           Data.List                           (find)
+import qualified Course.List          as C
+import           Data.List            (find)
 
 import           Files.Node.NodeJSON
 import           Files.State
 import           Files.Structure
-import           Settings.Exception.GeneralException
-import           Settings.Monad.Exception
 import           Settings.Network
 
 getRootFromCourse :: RIOE' m => C.CourseID -> m (Maybe FolderJSON)

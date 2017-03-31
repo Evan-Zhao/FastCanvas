@@ -5,8 +5,6 @@ module Communication.Send where
 
 import           Control.Concurrent.Async
 import           Control.Concurrent.Chan
-import           Control.Monad            (mapM_, unless, void)
-import           Data.Aeson
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
