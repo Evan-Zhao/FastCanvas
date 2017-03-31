@@ -19,5 +19,4 @@ fromString :: String -> SomeException
 fromString = toException . GeneralException
 
 toString :: SomeException -> String
-toString e = fromMaybe (show e) prettified where
-    prettified = findFirstJust $ map ($ e) dispatches
+toString = showException

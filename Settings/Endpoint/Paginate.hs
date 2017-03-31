@@ -11,7 +11,6 @@ module Settings.Endpoint.Paginate (
 import           Control.Exception                   hiding (try)
 import           Control.Monad.Except
 import           Data.Bifunctor
-import           Data.ByteString.Lazy.Char8          (ByteString)
 import           Data.List                           (lookup)
 import           Network.HTTP.Simple
 import           Text.Parsec

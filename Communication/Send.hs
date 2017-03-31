@@ -5,15 +5,14 @@ module Communication.Send where
 
 import           Control.Concurrent.Async
 import           Control.Concurrent.Chan
-import           Control.Monad            (mapM_, unless, void)
-import           Data.Aeson
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
 
 import           Course.File
-import qualified Course.List              as CL
+import qualified Course.List                 as CL
 import           Files.State
+import           Settings.Exception.Prettify
 import           Settings.Monad.Global
 
 type Excepted a = Either SomeException a
@@ -46,7 +45,7 @@ loopListening channel asyncR = do
     maybe this reshape maybeR
   where
     this = loopListening channel asyncR
-    reshape = return . joinEither
+    reshape = return . prettifyException . joinEither
 
 runGlobal :: Global a -> IO (Excepted a)
 runGlobal g = do

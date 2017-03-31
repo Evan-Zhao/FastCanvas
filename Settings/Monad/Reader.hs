@@ -10,7 +10,6 @@ module Settings.Monad.Reader (
 ) where
 
 import           Control.Monad.Reader
-import           Control.Monad.State
 import           Control.Monad.Trans.Except
 import           Data.Aeson
 import           Data.Aeson.Types

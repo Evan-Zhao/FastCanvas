@@ -1,9 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Files.Node.FSNode (
-    module Files.Node.FSNode,
-    MonadDownload
-) where
+module Files.Node.FSNode where
 
 import           Control.Monad.IO.Class     (MonadIO)
 import qualified Data.ByteString.Lazy.Char8 as L

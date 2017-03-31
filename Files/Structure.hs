@@ -10,8 +10,6 @@ module Files.Structure (
     SIO
 ) where
 
-import           Control.Monad              (mapM)
-import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
 import           Data.Aeson
 import           Data.Foldable
