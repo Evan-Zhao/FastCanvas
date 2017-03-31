@@ -8,8 +8,8 @@ import           Files.State
 import           GHC.Generics
 import           Settings.Monad.Global
 
-newtype ApiResponse = ApiResponse {
+newtype SyncResult = SyncResult {
     unResponse :: Either SomeException [(CL.Course, DownloadSummary)]
 } deriving (Generic)
 
-instance ToJSON ApiResponse
+instance ToJSON SyncResult
