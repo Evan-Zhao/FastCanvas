@@ -32,7 +32,7 @@ function createWindow () {
 }
 
 function createBackendServer () {
-  backendServer = child_process.spawn('./resources/backend-exe')
+  backendServer = child_process.spawn('./Main.exe')
 }
 
 // This method will be called when Electron has finished

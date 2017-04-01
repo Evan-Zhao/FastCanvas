@@ -1,0 +1,17 @@
+{
+    "token": "8649~GFqYP6MVpVK4OIlzHGuvalICMuBwI4wPW9qot4Ky98pk48uE98P1GtmYJNXx6svN",
+    "download_path": "D:\\SJTU\\Sophomore S2\\TestDownload",
+    "comments": [
+        {
+            "collect_rule": {
+                "filename_regex" : "lecture(\\d*)_ve216_ch(\\d*).pdf", 
+                "parent_path_regex" : "VE216/.*"
+            },
+            "remap_rule": {
+                "rename_regex" : "lecture$1",
+                "path_absolute" : false,
+                "path_regex" : "Chapter$2"
+            }
+        }
+    ]
+}
