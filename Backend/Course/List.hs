@@ -3,7 +3,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
-module Course.List where
+module Course.List (
+    thisTermCourse,
+    courseShortName,
+    Course (..),
+    CourseID
+) where
 
 import           Data.Aeson
 import           GHC.Generics
@@ -19,8 +24,6 @@ data Course = Course {
 } deriving (Eq, Show, Generic)
 instance ToJSON Course
 instance FromJSON Course
-
-type CourseShortName = String
 
 takeThisTermCourse :: [Course] -> [Course]
 takeThisTermCourse = filter ((== thisTermId) . enrollment_term_id)

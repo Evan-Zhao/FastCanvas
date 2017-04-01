@@ -50,3 +50,6 @@ Temporary Items
 *.hi
 *.o
 *.exe
+
+# Logged file
+*.log
