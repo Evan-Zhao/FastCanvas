@@ -10,34 +10,35 @@ import           Network.Wai.Handler.Warp
 import           Servant
 
 import           Course.File
-import qualified Course.List                 as CL
+import qualified Course.List                         as CL
 import           Files.State
-import           Settings.Exception.Prettify
+import           Settings.Exception.GeneralException
 import           Settings.Monad.Global
 
 type Excepted a = Either SomeException a
+type ExDisplayed a = Either String a
 
-type SyncResult = Excepted [(CL.Course, DownloadSummary)]
-type CoursesResult = Excepted [CL.Course]
+type Sync = [(CL.Course, DownloadSummary)]
+type Courses = [CL.Course]
 
-type API = "sync" :> Get '[JSON] SyncResult
-      :<|> "courses" :> Get '[JSON] CoursesResult
+type API = "sync" :> Get '[JSON] (ExDisplayed Sync)
+      :<|> "courses" :> Get '[JSON] (ExDisplayed Courses)
 
 server :: Server API
 server = liftIO sync :<|> liftIO courses
 
-courses :: IO CoursesResult
+courses :: IO (ExDisplayed Courses)
 courses = do
     putStrLn "endpoint: \"courses\""
-    runGlobal CL.thisTermCourse
+    leftToString <$> runGlobal CL.thisTermCourse
 
-sync :: IO SyncResult
+sync :: IO (ExDisplayed Sync)
 sync = do
     putStrLn "endpoint: \"sync\""
     (channel, asyncResult) <- runGlobalAsync syncG
-    loopListening channel asyncResult
+    leftToString <$> loopListening channel asyncResult
 
-loopListening :: EnvS -> Async SyncResult -> IO SyncResult
+loopListening :: EnvS -> Async (Excepted Sync) -> IO (Excepted Sync)
 loopListening channel asyncR = do
     next <- readChan channel
     print next
@@ -45,7 +46,7 @@ loopListening channel asyncR = do
     maybe this reshape maybeR
   where
     this = loopListening channel asyncR
-    reshape = return . prettifyException . joinEither
+    reshape = return . joinEither
 
 runGlobal :: Global a -> IO (Excepted a)
 runGlobal g = do
@@ -58,7 +59,7 @@ runGlobalAsync g = do
     asynced <- async $ (\(a,_,_) -> a) <$> runRWST (runExceptT g) envR envS
     return (envS, asynced)
 
-syncG :: Global [(CL.Course, DownloadSummary)]
+syncG :: Global Sync
 syncG = do
     this <- CL.thisTermCourse
     defPath <- lift $ asks getDefaultPath
