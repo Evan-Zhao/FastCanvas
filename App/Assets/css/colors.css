@@ -1,0 +1,24 @@
+
+/* Custom Properties */
+
+:root {
+  --color:          hsl(0,0%,22%);
+  --color-subtle:   hsl(0,0%,44%);
+  --color-strong:   hsl(0,0%,11%);
+  --color-link:     hsl(0,0%,22%);
+
+  --color-border:   hsl(0,0%,88%);
+  --color-bg:       hsl(0,0%,96%);
+
+  --color-accent:   black; /* Fallback */
+}
+
+
+/* Category Colors */
+
+.course-0          { --color-accent: hsl(116, 30%, 36%); }
+.course-1          { --color-accent: hsl(194, 60%, 36%); }
+.course-2          { --color-accent: hsl(222, 53%, 50%); }
+.course-3          { --color-accent: hsl(285, 47%, 46%); }
+.course-4          { --color-accent: hsl(330, 65%, 48%); }
+.course-5          { --color-accent: hsl( 36, 77%, 34%); }

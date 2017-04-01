@@ -2,8 +2,14 @@
 const host     = 'http://127.0.0.1:8080'
 const endpoint = '/courses'
 // Retry configuration
-let maxNoOfAttempts        = 10,
-    waitTimeBetweenAttempt = 250
+let maxNoOfAttempts        = 3,
+    waitTimeBetweenAttempt = 2000
+
+makeCourseDiv = function(index, courseName) {
+  return `<div class="nav-div course-${index}">
+  <button type="button" id="button-${index}" class="nav-button"> ${courseName}</button>
+  </div>`
+}
 
 let _fetchCourseList = function(waitTime, maxAttempts, currentAttemptNo) {
   $.getJSON(host + endpoint, function(courses) {
@@ -15,17 +21,13 @@ let _fetchCourseList = function(waitTime, maxAttempts, currentAttemptNo) {
       let output = "";
       for (let i in courses.Right) {
         let course = courses.Right[i]
-        output += `Course ID: ${course.id},
-                  Course Name: ${course.name}
-                  <br>`
+        output += makeCourseDiv(i, course.name)
       }
-      $('#courseList').html(output)
+      $('#nav').append(output)
       $('#status').html(``)
     }
   }).fail(function() {
-    $('#status').html(`Attempt no. <b>${currentAttemptNo}</b>. Are you sure the
-                       server is running on <b>${host}</b>, and the endpoint
-                       <b>${endpoint}</b> is correct?`)
+    $('#status').html(`Lost connect from server`)
     // Keep trying until we get an answer or reach the maximum number of retries
     if (currentAttemptNo < maxAttempts) {
       setTimeout(function() {
