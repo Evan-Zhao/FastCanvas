@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Peek.Peek (
+module Endpoint.Peek (
     peekAt,
     PeekResponse
 ) where

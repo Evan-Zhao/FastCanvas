@@ -9,10 +9,10 @@ import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
 
-import           Course.File
-import           Course.List
+import           Endpoint.Courses
+import qualified Endpoint.Peek            as P
+import           Endpoint.Sync
 import           Files.State
-import qualified Peek.Peek                as P
 import           Settings.Monad.Global
 
 type API = "sync" :> Get '[JSON] (ExDisplayed Sync)
