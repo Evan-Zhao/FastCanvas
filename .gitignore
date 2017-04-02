@@ -53,3 +53,9 @@ Temporary Items
 
 # Logged file
 *.log
+
+# Electron Dependency
+App/node_modules
+
+# Visual Studio Config
+App/.vscode

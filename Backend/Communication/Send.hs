@@ -12,6 +12,7 @@ import           Servant
 import           Course.File
 import qualified Course.List                         as CL
 import           Files.State
+import           Peek.Peek
 import           Settings.Exception.GeneralException
 import           Settings.Monad.Global
 
@@ -23,9 +24,10 @@ type Courses = [CL.Course]
 
 type API = "sync" :> Get '[JSON] (ExDisplayed Sync)
       :<|> "courses" :> Get '[JSON] (ExDisplayed Courses)
+      :<|> "peek" :> Capture "path" FilePath :> Get '[JSON] PeekResponse
 
 server :: Server API
-server = liftIO sync :<|> liftIO courses
+server = liftIO sync :<|> liftIO courses :<|> (liftIO . peekAt)
 
 courses :: IO (ExDisplayed Courses)
 courses = do
