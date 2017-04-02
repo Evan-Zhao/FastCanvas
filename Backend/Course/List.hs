@@ -7,7 +7,8 @@ module Course.List (
     thisTermCourse,
     courseShortName,
     Course (..),
-    CourseID
+    CourseID,
+    Courses
 ) where
 
 import           Data.Aeson
@@ -24,6 +25,8 @@ data Course = Course {
 } deriving (Eq, Show, Generic)
 instance ToJSON Course
 instance FromJSON Course
+
+type Courses = [Course]
 
 takeThisTermCourse :: [Course] -> [Course]
 takeThisTermCourse = filter ((== thisTermId) . enrollment_term_id)
