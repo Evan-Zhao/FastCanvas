@@ -1,0 +1,37 @@
+.sync-container {
+    vertical-align: bottom
+}
+
+.progress-bar {
+    background: var(--color-border)
+}
+
+.bar-blue {
+    background: var(--blue);
+    height: 3px;
+}
+
+.refresh-button {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    border: 0px;
+    background: var(--blue);
+    float: right;
+    padding: 5px;
+    box-shadow: -1.5px 1.5px 10px #aaaaaa;
+    outline: none;
+}
+
+.refresh-icon {
+    height: 32px;
+    width: 32px;
+    display: block;
+    margin: auto;
+}
+
+.refresh-icon-animate {
+	animation:spin 1s ease-in-out infinite;
+}
+
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }

@@ -9,17 +9,8 @@ function handleSectionTrigger (event) {
   hideAllSectionsAndDeselectButtons()
 
   // Highlight clicked button and show view
-  event.target.classList.add('is-selected')
-
-  // Display the current section
-  const sectionId = event.target.dataset.section + '-section'
-  document.getElementById(sectionId).classList.add('is-shown')
-
-  // Save currently active button in localStorage
-  const buttonId = event.target.getAttribute('id')
-  storage.set('activeSectionButtonId', buttonId, function (err) {
-    if (err) return console.error(err)
-  })
+  if ($(event.target).hasClass('nav-button'))
+    event.target.classList.add('is-selected')
 }
 
 document.body.addEventListener('click', function (event) {

@@ -11,6 +11,13 @@
   --color-bg:       hsl(0,0%,96%);
 
   --color-accent:   black; /* Fallback */
+
+  --grey: #f5f5f5;
+  --dark-blue: #0084d3;
+  --blue: #00a6f7;
+  --white: #fff;
+  --black: #1b1e25;
+  --light-blue: #c1d1e8;
 }
 
 

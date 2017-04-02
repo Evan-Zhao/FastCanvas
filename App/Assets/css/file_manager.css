@@ -1,0 +1,18 @@
+#main-container {
+    width: 100%
+}
+
+#table-header {
+    background-color: var(--white);
+    display: flex;
+    border-bottom: 1px solid var(--grey);
+}
+
+.table-header-items {
+    padding: 10px 0 10px 10px;
+    flex: 1;
+    border-right: 1px solid var(--grey);
+}
+.table-header-items:nth-of-type(1) {
+    flex: 3;
+}
