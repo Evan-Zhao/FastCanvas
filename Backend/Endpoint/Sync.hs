@@ -26,7 +26,7 @@ syncG = do
     states <- mapM (downloadFromCourse defPath) this
     return $ zip this states
 
-getRootFromCourse :: RIOE' m => CL.Int -> m (Maybe FolderJSON)
+getRootFromCourse :: RIOE' m => Int -> m (Maybe FolderJSON)
 getRootFromCourse id' = do
     foldersJSON <- canvasJSON $ "courses/" ++ show id' ++ "/folders"
     return $ find ((==Nothing) . parent_folder_id) (foldersJSON :: [FolderJSON])

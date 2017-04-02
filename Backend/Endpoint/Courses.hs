@@ -16,7 +16,6 @@ import           Text.Parsec
 
 import           Settings.Network
 
-type Int = Int
 data Course = Course {
     id                 :: Int,
     name               :: String,
