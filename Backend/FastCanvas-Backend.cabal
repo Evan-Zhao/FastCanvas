@@ -1,0 +1,88 @@
+name:                FastCanvas-Backend
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/Evan-Zhao/FastCanvas#README
+license:             BSD3
+license-file:        LICENSE
+author:              Evan Zhao
+maintainer:          evanzhao@umich.edu
+copyright:           2017 Author name here
+category:            Web
+build-type:          Simple
+extra-source-files:  
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Endpoint.Courses
+                     , Endpoint.Peek
+                     , Endpoint.Sync
+                     , Files.Local.Entry
+                     , Files.Node.Download
+                     , Files.Node.FSNode
+                     , Files.Node.NodeJSON
+                     , Files.State
+                     , Files.Structure
+                     , Files.Tree
+                     , Settings.Endpoint.Paginate
+                     , Settings.Exception.GeneralException
+                     , Settings.Exception.Prettify
+                     , Settings.Exception.Prettify.HttpException
+                     , Settings.Exception.Prettify.JSONException
+                     , Settings.Exception.ResponseCodeException
+                     , Settings.Monad.Exception
+                     , Settings.Monad.Global
+                     , Settings.Monad.Reader
+                     , Settings.Monad.State
+                     , Settings.Monad.Writer
+                     , Settings.Network
+                     , Communication.Send
+  build-depends:       base >= 4.7 && < 5
+                     , transformers
+                     , time
+                     , dlist
+                     , mtl
+                     , aeson
+                     , http-conduit
+                     , servant
+                     , array
+                     , regex-with-pcre <= 0.8.0.0
+                     , bytestring
+                     , async
+                     , SafeSemaphore
+                     , parsec
+                     , http-types
+                     , containers
+                     , text
+                     , resourcet
+                     , case-insensitive >= 1.2.0.7
+                     , conduit >= 1.2.9
+                     , conduit-extra >= 1.1.15 
+                     , directory >= 1.3.0.0
+                     , filepath >= 1.4.1.1
+                     , wai >= 3.2.1.1
+                     , warp >= 3.2.11
+                     , servant-server >= 0.9.1.1
+  default-language:    Haskell2010
+
+executable Backend
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -O2 -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , FastCanvas-Backend
+  default-language:    Haskell2010
+
+test-suite Backend-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , FastCanvas-Backend
+  ghc-options:         -O2 -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/proj

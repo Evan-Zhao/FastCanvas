@@ -54,6 +54,9 @@ Temporary Items
 # Logged file
 *.log
 
+# Haskell Stack Facilities
+Backend/.stack-work
+
 # Electron Dependency
 App/node_modules
 

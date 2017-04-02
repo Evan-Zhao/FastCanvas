@@ -1,0 +1,8 @@
+flags: {}
+extra-package-dbs: []
+packages:
+- '.'
+extra-deps:
+- regex-0.8.0.0
+- regex-with-pcre-0.8.0.0
+resolver: lts-8.0
