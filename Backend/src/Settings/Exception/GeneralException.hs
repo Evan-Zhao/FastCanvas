@@ -6,6 +6,7 @@ module Settings.Exception.GeneralException (
 ) where
 
 import           Control.Exception
+import           Data.Bifunctor              (first)
 import           Data.Maybe                  (fromMaybe)
 import           Data.Typeable
 import           Settings.Exception.Prettify
@@ -20,3 +21,6 @@ fromString = toException . GeneralException
 
 toString :: SomeException -> String
 toString = showException
+
+leftToString :: Either SomeException a -> Either String a
+leftToString = first toString

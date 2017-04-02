@@ -2,32 +2,42 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
-module Course.File (
-    getRootFromCourse,
-    downloadFromCourse
+module Endpoint.Sync (
+    syncG,
+    Sync
 ) where
 
 import           Control.Monad.Except
-import qualified Course.List          as C
-import           Data.List            (find)
+import           Data.List             (find)
+import qualified Endpoint.Courses      as CL
 
 import           Files.Node.NodeJSON
 import           Files.State
 import           Files.Structure
+import           Settings.Monad.Global
 import           Settings.Network
 
-getRootFromCourse :: RIOE' m => C.CourseID -> m (Maybe FolderJSON)
+type Sync = [(CL.Course, DownloadSummary)]
+
+syncG :: Global Sync
+syncG = do
+    this <- CL.thisTermCourse
+    defPath <- lift $ asks getDefaultPath
+    states <- mapM (downloadFromCourse defPath) this
+    return $ zip this states
+
+getRootFromCourse :: RIOE' m => Int -> m (Maybe FolderJSON)
 getRootFromCourse id' = do
     foldersJSON <- canvasJSON $ "courses/" ++ show id' ++ "/folders"
     return $ find ((==Nothing) . parent_folder_id) (foldersJSON :: [FolderJSON])
 
-downloadFromCourse :: (RIOE' m, SIO m) => FilePath -> C.Course -> m DownloadSummary
+downloadFromCourse :: (RIOE' m, SIO m) => FilePath -> CL.Course -> m DownloadSummary
 downloadFromCourse folder course = do
     x <- getRootFromCourse id'
     maybe emptyCourseResponse (nonemptyCourse courseName folder) x
   where
-    courseName = C.courseShortName course
-    id' = C.id course
+    courseName = CL.courseShortName course
+    id' = CL.id course
 
 emptyCourseResponse :: MonadIO m => m DownloadSummary
 emptyCourseResponse = return mempty
