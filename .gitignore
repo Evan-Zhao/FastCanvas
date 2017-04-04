@@ -58,4 +58,8 @@ Temporary Items
 App/node_modules
 
 # Visual Studio Config
+.vscode
 App/.vscode
+
+# Haskell Stack 
+Backend/.stack-work
