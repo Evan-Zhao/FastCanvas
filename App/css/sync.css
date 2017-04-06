@@ -12,20 +12,18 @@
 }
 
 .refresh-button {
-    height: 50px;
-    width: 50px;
+    height: 48px;
+    width: 48px;
     border-radius: 50%;
     border: 0px;
     background: var(--blue);
     float: right;
     padding: 5px;
-    box-shadow: -1.5px 1.5px 10px #aaaaaa;
+    box-shadow: -1px 1px 10px #aaaaaa;
     outline: none;
 }
 
 .refresh-icon {
-    height: 32px;
-    width: 32px;
     display: block;
     margin: auto;
 }

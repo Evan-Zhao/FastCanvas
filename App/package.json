@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/codetalkio/Haskell-Electron-app#readme",
   "devDependencies": {
-    "electron-prebuilt": "^1.0.1"
+    "electron-prebuilt": "^1.0.1", 
+    "material-design-icons": ""
   }
 }
