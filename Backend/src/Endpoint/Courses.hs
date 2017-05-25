@@ -3,11 +3,11 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
-module Course.List (
+module Endpoint.Courses (
     thisTermCourse,
     courseShortName,
     Course (..),
-    CourseID
+    Courses
 ) where
 
 import           Data.Aeson
@@ -16,14 +16,15 @@ import           Text.Parsec
 
 import           Settings.Network
 
-type CourseID = Int
 data Course = Course {
-    id                 :: CourseID,
+    id                 :: Int,
     name               :: String,
     enrollment_term_id :: Int
 } deriving (Eq, Show, Generic)
 instance ToJSON Course
 instance FromJSON Course
+
+type Courses = [Course]
 
 takeThisTermCourse :: [Course] -> [Course]
 takeThisTermCourse = filter ((== thisTermId) . enrollment_term_id)
